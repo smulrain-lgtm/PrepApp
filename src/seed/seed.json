@@ -1,0 +1,3014 @@
+[
+  {
+    "_id": "settings",
+    "type": "settings",
+    "people": 3,
+    "pets": [
+      {
+        "id": "dog-1",
+        "name": "Dog 1 (smaller)",
+        "kind": "dog",
+        "foodGPerDay": 120,
+        "waterLPerDay": 1
+      },
+      {
+        "id": "dog-2",
+        "name": "Dog 2",
+        "kind": "dog",
+        "foodGPerDay": 80,
+        "waterLPerDay": 1
+      }
+    ],
+    "targetDays": 3,
+    "considerExpiry": true,
+    "useSoonAtRisk": false,
+    "indoorOnly": false,
+    "freezing": false,
+    "warningMonths": 6,
+    "dailyNeeds": {
+      "waterLPerPerson": 4,
+      "kcalPerPerson": 2000,
+      "gasGPerPerson": 77
+    },
+    "criticalMetrics": ["water_l", "kcal", "pet_food_g", "fuel_g", "med_days"],
+    "updatedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "category:water",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Water",
+    "icon": "droplet",
+    "order": 0,
+    "defaultMetric": "water_l"
+  },
+  {
+    "_id": "category:food-mains",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Food – Main meals",
+    "icon": "bowl",
+    "order": 1,
+    "defaultMetric": "kcal"
+  },
+  {
+    "_id": "category:food-sides",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Food – Sides",
+    "icon": "bowl",
+    "order": 2,
+    "defaultMetric": "kcal"
+  },
+  {
+    "_id": "category:food-desserts",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Food – Desserts",
+    "icon": "cake",
+    "order": 3,
+    "defaultMetric": "kcal"
+  },
+  {
+    "_id": "category:food-snacks",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Food – Snacks",
+    "icon": "cookie",
+    "order": 4,
+    "defaultMetric": "kcal"
+  },
+  {
+    "_id": "category:food-drinks",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Food – Drinks",
+    "icon": "cup",
+    "order": 5,
+    "defaultMetric": "kcal"
+  },
+  {
+    "_id": "category:pet-food",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Pet food",
+    "icon": "paw",
+    "order": 6,
+    "defaultMetric": "pet_food_g"
+  },
+  {
+    "_id": "category:cooking-fuel",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Cooking & fuel",
+    "icon": "flame",
+    "order": 7,
+    "defaultMetric": "fuel_g"
+  },
+  {
+    "_id": "category:power-light",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Power & light",
+    "icon": "bulb",
+    "order": 8,
+    "defaultMetric": "light_days"
+  },
+  {
+    "_id": "category:safety-first-aid",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Safety & first aid",
+    "icon": "cross",
+    "order": 9,
+    "defaultMetric": "med_days"
+  },
+  {
+    "_id": "category:hygiene",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Hygiene & sanitation",
+    "icon": "soap",
+    "order": 10,
+    "defaultMetric": "none"
+  },
+  {
+    "_id": "category:warmth",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Warmth & shelter",
+    "icon": "blanket",
+    "order": 11,
+    "defaultMetric": "none"
+  },
+  {
+    "_id": "category:documents-money",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Documents & money",
+    "icon": "folder",
+    "order": 12,
+    "defaultMetric": "none"
+  },
+  {
+    "_id": "category:garage-storage",
+    "type": "category",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Garage storage",
+    "icon": "box",
+    "order": 13,
+    "defaultMetric": "none"
+  },
+  {
+    "_id": "item:steak-vegetables-potato",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Steak, Vegetables & Potato",
+    "categoryId": "category:food-mains",
+    "subCategory": "Main meal",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 500,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:vegetable-tikka-masala",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Vegetable Tikka Masala",
+    "categoryId": "category:food-mains",
+    "subCategory": "Main meal",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 500,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:chicken-curry",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Chicken Curry",
+    "categoryId": "category:food-mains",
+    "subCategory": "Main meal",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 500,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "Adventure Foods",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:chicken-with-lentils",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Chicken with Lentils",
+    "categoryId": "category:food-mains",
+    "subCategory": "Main meal",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 500,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:long-grain-white-rice",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Long Grain White Rice",
+    "categoryId": "category:food-sides",
+    "subCategory": "Side",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 300,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "notes": "Side / carb – pair with a protein main",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:baked-beans-in-tomato-sauce",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Baked Beans in Tomato Sauce",
+    "categoryId": "category:food-mains",
+    "subCategory": "Main meal",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 500,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:bread-slice",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Bread Slice",
+    "categoryId": "category:food-sides",
+    "subCategory": "Side",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 300,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "notes": "Side / carb – pair with a protein main",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:chilli-con-carne",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Chilli Con Carne",
+    "categoryId": "category:food-mains",
+    "subCategory": "Main meal",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 500,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:steak-vegetables-with-dumplings",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Steak & Vegetables with Dumplings",
+    "categoryId": "category:food-mains",
+    "subCategory": "Main meal",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 500,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:roasted-garlic-mashed-potato",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Roasted Garlic Mashed Potato",
+    "categoryId": "category:food-sides",
+    "subCategory": "Side",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 300,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "Idahoan",
+    "notes": "Side / carb – pair with a protein main",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:bacon-cheese-mashed-potato",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Bacon & Cheese Mashed Potato",
+    "categoryId": "category:food-sides",
+    "subCategory": "Side",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 300,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "Idahoan",
+    "notes": "Side / carb – pair with a protein main",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:buttery-mashed-potato",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Buttery Mashed Potato",
+    "categoryId": "category:food-sides",
+    "subCategory": "Side",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 300,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "Idahoan",
+    "notes": "Side / carb – pair with a protein main",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:cheddar-cheese-mashed-potato",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Cheddar Cheese Mashed Potato",
+    "categoryId": "category:food-sides",
+    "subCategory": "Side",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 300,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "Idahoan",
+    "notes": "Side / carb – pair with a protein main",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:butter-herb-mashed-potato",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Butter & Herb Mashed Potato",
+    "categoryId": "category:food-sides",
+    "subCategory": "Side",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 300,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "Idahoan",
+    "notes": "Side / carb – pair with a protein main",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:pasta-bolognaise",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Pasta Bolognaise",
+    "categoryId": "category:food-mains",
+    "subCategory": "Main meal",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 500,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "Wayfayrer",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:punjabi-chickpea-curry",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Punjabi Chickpea Curry",
+    "categoryId": "category:food-mains",
+    "subCategory": "Main meal",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 500,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:chicken-tikka-with-rice",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Chicken Tikka with Rice",
+    "categoryId": "category:food-mains",
+    "subCategory": "Main meal",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 500,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "Wayfayrer",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:treacle-pudding",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Treacle Pudding",
+    "categoryId": "category:food-desserts",
+    "subCategory": "Dessert",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 350,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:rice-pudding",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Rice Pudding",
+    "categoryId": "category:food-desserts",
+    "subCategory": "Dessert",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 350,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:chocolate-pudding-in-chocolate-sauce",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Chocolate Pudding in Chocolate Sauce",
+    "categoryId": "category:food-desserts",
+    "subCategory": "Dessert",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 350,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:chocolate-pudding-with-protein",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Chocolate Pudding with Protein",
+    "categoryId": "category:food-desserts",
+    "subCategory": "Dessert",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 350,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:cheese-spread",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Cheese Spread",
+    "categoryId": "category:food-snacks",
+    "subCategory": "Snack",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 200,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:ginger-biscuits",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Ginger Biscuits",
+    "categoryId": "category:food-snacks",
+    "subCategory": "Snack",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 200,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:fruit-flapjack",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Fruit Flapjack",
+    "categoryId": "category:food-snacks",
+    "subCategory": "Snack",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 200,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:chocolate-cake",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Chocolate Cake",
+    "categoryId": "category:food-snacks",
+    "subCategory": "Snack",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 200,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:just-nuts",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Just Nuts",
+    "categoryId": "category:food-snacks",
+    "subCategory": "Snack",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 200,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:coconut-biscuit-bites",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Coconut Biscuit Bites",
+    "categoryId": "category:food-snacks",
+    "subCategory": "Snack",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 200,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:biscuit-browns",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Biscuit Browns",
+    "categoryId": "category:food-snacks",
+    "subCategory": "Snack",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 200,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:peanut-butter",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Peanut Butter",
+    "categoryId": "category:food-snacks",
+    "subCategory": "Snack",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 200,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "item:hot-chocolate",
+    "type": "item",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Hot Chocolate",
+    "categoryId": "category:food-drinks",
+    "subCategory": "Drink",
+    "unit": "pack",
+    "perUnit": {
+      "metric": "kcal",
+      "amount": 100,
+      "estimated": true
+    },
+    "location": "garage",
+    "supplier": "MOD",
+    "countsTowardReadiness": true,
+    "freezeSensitive": false
+  },
+  {
+    "_id": "batch:steak-vegetables-potato:2001-01-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:steak-vegetables-potato",
+    "bestBefore": "2001-01-01",
+    "addedAt": "2026-11-15T00:00:00.000Z",
+    "note": "Check printed date"
+  },
+  {
+    "_id": "movement:seed:steak-vegetables-potato:2001-01-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:steak-vegetables-potato:2001-01-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:vegetable-tikka-masala:2001-12-13",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:vegetable-tikka-masala",
+    "bestBefore": "2001-12-13",
+    "addedAt": "2026-11-15T00:00:00.000Z",
+    "note": "Check printed date"
+  },
+  {
+    "_id": "movement:seed:vegetable-tikka-masala:2001-12-13",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:vegetable-tikka-masala:2001-12-13",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:chicken-curry:2023-10-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:chicken-curry",
+    "bestBefore": "2023-10-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:chicken-curry:2023-10-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:chicken-curry:2023-10-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:chicken-with-lentils:2024-01-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:chicken-with-lentils",
+    "bestBefore": "2024-01-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:chicken-with-lentils:2024-01-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:chicken-with-lentils:2024-01-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:long-grain-white-rice:2025-10-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:long-grain-white-rice",
+    "bestBefore": "2025-10-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:long-grain-white-rice:2025-10-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:long-grain-white-rice:2025-10-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:baked-beans-in-tomato-sauce:2025-11-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:baked-beans-in-tomato-sauce",
+    "bestBefore": "2025-11-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:baked-beans-in-tomato-sauce:2025-11-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:baked-beans-in-tomato-sauce:2025-11-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:bread-slice:2025-12-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:bread-slice",
+    "bestBefore": "2025-12-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:bread-slice:2025-12-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:bread-slice:2025-12-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:chilli-con-carne:2025-12-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:chilli-con-carne",
+    "bestBefore": "2025-12-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:chilli-con-carne:2025-12-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:chilli-con-carne:2025-12-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:steak-vegetables-with-dumplings:2025-12-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:steak-vegetables-with-dumplings",
+    "bestBefore": "2025-12-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:steak-vegetables-with-dumplings:2025-12-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:steak-vegetables-with-dumplings:2025-12-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:roasted-garlic-mashed-potato:2027-03-30",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:roasted-garlic-mashed-potato",
+    "bestBefore": "2027-03-30",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:roasted-garlic-mashed-potato:2027-03-30",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:roasted-garlic-mashed-potato:2027-03-30",
+    "delta": 2,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:bacon-cheese-mashed-potato:2027-03-31",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:bacon-cheese-mashed-potato",
+    "bestBefore": "2027-03-31",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:bacon-cheese-mashed-potato:2027-03-31",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:bacon-cheese-mashed-potato:2027-03-31",
+    "delta": 2,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:buttery-mashed-potato:2027-04-03",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:buttery-mashed-potato",
+    "bestBefore": "2027-04-03",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:buttery-mashed-potato:2027-04-03",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:buttery-mashed-potato:2027-04-03",
+    "delta": 2,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:cheddar-cheese-mashed-potato:2027-04-06",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:cheddar-cheese-mashed-potato",
+    "bestBefore": "2027-04-06",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:cheddar-cheese-mashed-potato:2027-04-06",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:cheddar-cheese-mashed-potato:2027-04-06",
+    "delta": 2,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:butter-herb-mashed-potato:2027-04-09",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:butter-herb-mashed-potato",
+    "bestBefore": "2027-04-09",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:butter-herb-mashed-potato:2027-04-09",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:butter-herb-mashed-potato:2027-04-09",
+    "delta": 2,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:pasta-bolognaise:2027-11-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:pasta-bolognaise",
+    "bestBefore": "2027-11-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:pasta-bolognaise:2027-11-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:pasta-bolognaise:2027-11-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:punjabi-chickpea-curry:2027-11-03",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:punjabi-chickpea-curry",
+    "bestBefore": "2027-11-03",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:punjabi-chickpea-curry:2027-11-03",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:punjabi-chickpea-curry:2027-11-03",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:cheddar-cheese-mashed-potato:2027-11-04",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:cheddar-cheese-mashed-potato",
+    "bestBefore": "2027-11-04",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:cheddar-cheese-mashed-potato:2027-11-04",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:cheddar-cheese-mashed-potato:2027-11-04",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:buttery-mashed-potato:2027-12-21",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:buttery-mashed-potato",
+    "bestBefore": "2027-12-21",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:buttery-mashed-potato:2027-12-21",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:buttery-mashed-potato:2027-12-21",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:chicken-tikka-with-rice:2028-07-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:chicken-tikka-with-rice",
+    "bestBefore": "2028-07-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:chicken-tikka-with-rice:2028-07-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:chicken-tikka-with-rice:2028-07-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:treacle-pudding:1996-08-25",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:treacle-pudding",
+    "bestBefore": "1996-08-25",
+    "addedAt": "2026-11-15T00:00:00.000Z",
+    "note": "Check printed date"
+  },
+  {
+    "_id": "movement:seed:treacle-pudding:1996-08-25",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:treacle-pudding:1996-08-25",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:rice-pudding:2001-12-13",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:rice-pudding",
+    "bestBefore": "2001-12-13",
+    "addedAt": "2026-11-15T00:00:00.000Z",
+    "note": "Check printed date"
+  },
+  {
+    "_id": "movement:seed:rice-pudding:2001-12-13",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:rice-pudding:2001-12-13",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:treacle-pudding:2002-08-15",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:treacle-pudding",
+    "bestBefore": "2002-08-15",
+    "addedAt": "2026-11-15T00:00:00.000Z",
+    "note": "Check printed date"
+  },
+  {
+    "_id": "movement:seed:treacle-pudding:2002-08-15",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:treacle-pudding:2002-08-15",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:chocolate-pudding-in-chocolate-sauce:2026-11-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:chocolate-pudding-in-chocolate-sauce",
+    "bestBefore": "2026-11-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:chocolate-pudding-in-chocolate-sauce:2026-11-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:chocolate-pudding-in-chocolate-sauce:2026-11-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:chocolate-pudding-with-protein:2026-11-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:chocolate-pudding-with-protein",
+    "bestBefore": "2026-11-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:chocolate-pudding-with-protein:2026-11-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:chocolate-pudding-with-protein:2026-11-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:cheese-spread:2025-03-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:cheese-spread",
+    "bestBefore": "2025-03-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:cheese-spread:2025-03-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:cheese-spread:2025-03-01",
+    "delta": 2,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:ginger-biscuits:2025-06-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:ginger-biscuits",
+    "bestBefore": "2025-06-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:ginger-biscuits:2025-06-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:ginger-biscuits:2025-06-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:fruit-flapjack:2026-12-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:fruit-flapjack",
+    "bestBefore": "2026-12-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:fruit-flapjack:2026-12-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:fruit-flapjack:2026-12-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:chocolate-cake:2027-02-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:chocolate-cake",
+    "bestBefore": "2027-02-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:chocolate-cake:2027-02-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:chocolate-cake:2027-02-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:chocolate-cake:2027-04-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:chocolate-cake",
+    "bestBefore": "2027-04-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:chocolate-cake:2027-04-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:chocolate-cake:2027-04-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:just-nuts:2027-05-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:just-nuts",
+    "bestBefore": "2027-05-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:just-nuts:2027-05-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:just-nuts:2027-05-01",
+    "delta": 2,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:coconut-biscuit-bites:2027-09-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:coconut-biscuit-bites",
+    "bestBefore": "2027-09-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:coconut-biscuit-bites:2027-09-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:coconut-biscuit-bites:2027-09-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:biscuit-browns:2027-10-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:biscuit-browns",
+    "bestBefore": "2027-10-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:biscuit-browns:2027-10-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:biscuit-browns:2027-10-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:biscuit-browns:2028-08-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:biscuit-browns",
+    "bestBefore": "2028-08-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:biscuit-browns:2028-08-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:biscuit-browns:2028-08-01",
+    "delta": 2,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:peanut-butter:undated",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:peanut-butter",
+    "bestBefore": null,
+    "addedAt": "2026-11-15T00:00:00.000Z",
+    "note": "No date recorded – check pack"
+  },
+  {
+    "_id": "movement:seed:peanut-butter:undated",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:peanut-butter:undated",
+    "delta": 3,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:hot-chocolate:2026-10-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:hot-chocolate",
+    "bestBefore": "2026-10-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:hot-chocolate:2026-10-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:hot-chocolate:2026-10-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:hot-chocolate:2026-12-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:hot-chocolate",
+    "bestBefore": "2026-12-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:hot-chocolate:2026-12-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:hot-chocolate:2026-12-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:hot-chocolate:2027-02-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:hot-chocolate",
+    "bestBefore": "2027-02-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:hot-chocolate:2027-02-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:hot-chocolate:2027-02-01",
+    "delta": 1,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "batch:hot-chocolate:2027-04-01",
+    "type": "batch",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "itemId": "item:hot-chocolate",
+    "bestBefore": "2027-04-01",
+    "addedAt": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "_id": "movement:seed:hot-chocolate:2027-04-01",
+    "type": "movement",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "batchId": "batch:hot-chocolate:2027-04-01",
+    "delta": 6,
+    "reason": "added",
+    "at": "2026-11-15T00:00:00.000Z",
+    "by": "seed"
+  },
+  {
+    "_id": "checklist:01-drinking-cooking-water",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Drinking & cooking water",
+    "sectionId": "section:water",
+    "order": 1,
+    "target": {
+      "amount": 0,
+      "unit": "L",
+      "scaleBy": "water"
+    },
+    "status": "need",
+    "notes": "Covers drinking plus rehydrating meals and hot drinks. Food-grade jerrycans or sealed bottles; leave ~10% headroom so a hard frost won't split them. Keep off the concrete floor.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:02-bottled-water-kept-indoors",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Bottled water kept indoors",
+    "sectionId": "section:water",
+    "order": 2,
+    "target": {
+      "amount": 6,
+      "unit": "× 2 L bottles",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Backup in case the garage stock freezes solid in a cold snap. Rotate into everyday use.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:03-collapsible-water-carriers",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Collapsible water carriers",
+    "sectionId": "section:water",
+    "order": 3,
+    "target": {
+      "amount": 2,
+      "unit": "× 10 L carriers",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "For collecting and treating water if mains supply stops.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:04-water-filter-purification-tablets",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Water filter + purification tablets",
+    "sectionId": "section:water",
+    "order": 4,
+    "target": {
+      "amount": 1,
+      "unit": "filter + tablets",
+      "scaleBy": "fixed"
+    },
+    "status": "have",
+    "notes": "Tablets as backup to the filter. Don't let a filter with water in it freeze – store it dry.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:05-backpacking-meals-lunch-dinner",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Backpacking meals – lunch & dinner",
+    "sectionId": "section:food",
+    "order": 5,
+    "target": {
+      "amount": 2,
+      "unit": "meals",
+      "scaleBy": "people_days"
+    },
+    "status": "need",
+    "notes": "Counted on Food Store sheet: only 3 in-date protein mains (plus 12 Idahoan mash pots as sides). Need ~15 more. Each needs ~0.5 L boiling water.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:06-breakfasts-porridge-pots-sachets-granola",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Breakfasts – porridge pots / sachets, granola",
+    "sectionId": "section:food",
+    "order": 6,
+    "target": {
+      "amount": 1,
+      "unit": "servings",
+      "scaleBy": "people_days"
+    },
+    "status": "need",
+    "notes": "Porridge sachets are light, cheap and long-dated.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:07-tinned-protein-tuna-chicken-ham-beans-chilli",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Tinned protein – tuna, chicken, ham, beans, chilli",
+    "sectionId": "section:food",
+    "order": 7,
+    "target": {
+      "amount": 1,
+      "unit": "tins",
+      "scaleBy": "people_days"
+    },
+    "status": "need",
+    "notes": "Edible cold if fuel runs short. Ring-pull tins where possible.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:08-tinned-soup-vegetables",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Tinned soup & vegetables",
+    "sectionId": "section:food",
+    "order": 8,
+    "target": {
+      "amount": 1,
+      "unit": "tins",
+      "scaleBy": "people_days"
+    },
+    "status": "need",
+    "notes": "Hot soup is a big morale boost in a winter power cut.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:09-tinned-or-dried-fruit",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Tinned or dried fruit",
+    "sectionId": "section:food",
+    "order": 9,
+    "target": {
+      "amount": 6,
+      "unit": "tins / packs",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:10-snacks-cereal-bars-nuts-trail-mix-chocolate",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Snacks – cereal bars, nuts, trail mix, chocolate",
+    "sectionId": "section:food",
+    "order": 10,
+    "target": {
+      "amount": 2,
+      "unit": "snacks",
+      "scaleBy": "people_days"
+    },
+    "status": "need",
+    "notes": "Chocolate can bloom in summer heat – rotate before July.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:11-crackers-oatcakes-or-long-life-wraps",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Crackers, oatcakes or long-life wraps",
+    "sectionId": "section:food",
+    "order": 11,
+    "target": {
+      "amount": 3,
+      "unit": "packs",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:12-peanut-butter-spreads",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Peanut butter / spreads",
+    "sectionId": "section:food",
+    "order": 12,
+    "target": {
+      "amount": 1,
+      "unit": "large jar",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Check for allergies.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:13-uht-or-powdered-milk",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "UHT or powdered milk",
+    "sectionId": "section:food",
+    "order": 13,
+    "target": {
+      "amount": 3,
+      "unit": "L UHT (or 1 tub powder)",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:14-hot-drinks-tea-coffee-hot-chocolate-sugar",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Hot drinks – tea, coffee, hot chocolate, sugar",
+    "sectionId": "section:food",
+    "order": 14,
+    "target": {
+      "amount": 1,
+      "unit": "days' supply",
+      "scaleBy": "days"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:15-oral-rehydration-sachets",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Oral rehydration sachets",
+    "sectionId": "section:food",
+    "order": 15,
+    "target": {
+      "amount": 12,
+      "unit": "sachets",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Store indoors with medicines.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:16-seasoning-salt-pepper-stock-cubes-sauce-sachets",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Seasoning – salt, pepper, stock cubes, sauce sachets",
+    "sectionId": "section:food",
+    "order": 16,
+    "target": {
+      "amount": 1,
+      "unit": "kit",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:17-comfort-food-treats",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Comfort food / treats",
+    "sectionId": "section:food",
+    "order": 17,
+    "target": {
+      "amount": 3,
+      "unit": "treats",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Worth it for morale, especially with children.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:18-dog-food-treats-both-dogs",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Dog food & treats (both dogs)",
+    "sectionId": "section:food",
+    "order": 18,
+    "target": {
+      "amount": 0,
+      "unit": "g dry food",
+      "scaleBy": "pet_food"
+    },
+    "status": "need",
+    "notes": "Plus ~1 L extra water per dog per day. Sealed tub – dog food attracts rodents.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:19-gas-stove",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Gas stove",
+    "sectionId": "section:cooking-fuel",
+    "order": 19,
+    "target": {
+      "amount": 1,
+      "unit": "stove",
+      "scaleBy": "fixed"
+    },
+    "status": "have",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:20-gas-canisters",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Gas canisters",
+    "sectionId": "section:cooking-fuel",
+    "order": 20,
+    "target": {
+      "amount": 4,
+      "unit": "× 230 g canisters",
+      "scaleBy": "fixed"
+    },
+    "status": "check",
+    "notes": "Use winter-mix (isobutane/propane) – plain butane struggles below ~0°C. Warm canisters indoors before use in cold weather.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:21-wood-stoves",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Wood stoves",
+    "sectionId": "section:cooking-fuel",
+    "order": 21,
+    "target": {
+      "amount": 3,
+      "unit": "stoves",
+      "scaleBy": "fixed"
+    },
+    "status": "have",
+    "notes": "Keep fuel off the floor and dry.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:22-dry-fuel-kindling-firelighters",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Dry fuel, kindling, firelighters",
+    "sectionId": "section:cooking-fuel",
+    "order": 22,
+    "target": {
+      "amount": 1,
+      "unit": "bag of each",
+      "scaleBy": "fixed"
+    },
+    "status": "check",
+    "notes": "Keep fuel off the floor and dry.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:23-lighters-storm-proof-matches",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Lighters + storm-proof matches",
+    "sectionId": "section:cooking-fuel",
+    "order": 23,
+    "target": {
+      "amount": 3,
+      "unit": "lighters + 1 box matches",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Matches in a waterproof tub.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:24-manual-tin-openers",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Manual tin openers",
+    "sectionId": "section:cooking-fuel",
+    "order": 24,
+    "target": {
+      "amount": 2,
+      "unit": "openers",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Easy to forget and essential if you rely on tins.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:25-pans-cutlery-mugs-plates",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Pans, cutlery, mugs, plates",
+    "sectionId": "section:cooking-fuel",
+    "order": 25,
+    "target": {
+      "amount": 1,
+      "unit": "set per person",
+      "scaleBy": "people"
+    },
+    "status": "have",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:26-washing-up-liquid-scourer-tea-towel",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Washing-up liquid, scourer, tea towel",
+    "sectionId": "section:cooking-fuel",
+    "order": 26,
+    "target": {
+      "amount": 1,
+      "unit": "of each",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:27-foil-zip-lock-bags-kitchen-roll",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Foil, zip-lock bags, kitchen roll",
+    "sectionId": "section:cooking-fuel",
+    "order": 27,
+    "target": {
+      "amount": 1,
+      "unit": "of each",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:28-portable-solar-panels",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Portable solar panels",
+    "sectionId": "section:power-light",
+    "order": 28,
+    "target": {
+      "amount": 1,
+      "unit": "set",
+      "scaleBy": "fixed"
+    },
+    "status": "have",
+    "notes": "Test quarterly.",
+    "lastChecked": null,
+    "checkIntervalDays": 91
+  },
+  {
+    "_id": "checklist:29-battery-packs-power-banks",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Battery packs / power banks",
+    "sectionId": "section:power-light",
+    "order": 29,
+    "target": {
+      "amount": 1,
+      "unit": "set",
+      "scaleBy": "fixed"
+    },
+    "status": "have",
+    "notes": "Keep at 50–80% and top up every 3 months. Lithium cells dislike being charged below 0°C – bring indoors to charge.",
+    "lastChecked": null,
+    "checkIntervalDays": 91
+  },
+  {
+    "_id": "checklist:30-electric-lanterns",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Electric lanterns",
+    "sectionId": "section:power-light",
+    "order": 30,
+    "target": {
+      "amount": 1,
+      "unit": "set",
+      "scaleBy": "fixed"
+    },
+    "status": "have",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:31-paraffin-lamps-paraffin",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Paraffin lamps + paraffin",
+    "sectionId": "section:power-light",
+    "order": 31,
+    "target": {
+      "amount": 4,
+      "unit": "L paraffin",
+      "scaleBy": "fixed"
+    },
+    "status": "check",
+    "notes": "Approved container, ventilated, away from gas. Only use indoors with ventilation and a CO alarm.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:32-head-torches",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Head torches",
+    "sectionId": "section:power-light",
+    "order": 32,
+    "target": {
+      "amount": 1,
+      "unit": "per person",
+      "scaleBy": "people"
+    },
+    "status": "need",
+    "notes": "Hands-free is far more useful than a hand torch.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:33-spare-batteries-aa-aaa",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Spare batteries (AA / AAA)",
+    "sectionId": "section:power-light",
+    "order": 33,
+    "target": {
+      "amount": 24,
+      "unit": "batteries",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Lithium AAs cope best with cold storage.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:34-wind-up-or-battery-dabfm-radio",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Wind-up or battery DAB/FM radio",
+    "sectionId": "section:power-light",
+    "order": 34,
+    "target": {
+      "amount": 1,
+      "unit": "radio",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Key for official updates if mobile and broadband are down.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:35-charging-cables-for-every-phonedevice",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Charging cables for every phone/device",
+    "sectionId": "section:power-light",
+    "order": 35,
+    "target": {
+      "amount": 1,
+      "unit": "set",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:36-portable-power-station",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Portable power station",
+    "sectionId": "section:power-light",
+    "order": 36,
+    "target": {
+      "amount": 1,
+      "unit": "unit",
+      "scaleBy": "fixed"
+    },
+    "status": "have",
+    "notes": "Pairs with the solar panels. Keep 50–80% charged and check quarterly.",
+    "lastChecked": null,
+    "checkIntervalDays": 91
+  },
+  {
+    "_id": "checklist:37-battery-carbon-monoxide-alarm",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Battery carbon monoxide alarm",
+    "sectionId": "section:safety-first-aid",
+    "order": 37,
+    "target": {
+      "amount": 2,
+      "unit": "alarms",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Essential if stoves or paraffin lamps are ever used indoors.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:38-fire-extinguisher-fire-blanket",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Fire extinguisher + fire blanket",
+    "sectionId": "section:safety-first-aid",
+    "order": 38,
+    "target": {
+      "amount": 1,
+      "unit": "of each",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:39-first-aid-kit",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "First aid kit",
+    "sectionId": "section:safety-first-aid",
+    "order": 39,
+    "target": {
+      "amount": 1,
+      "unit": "comprehensive kit",
+      "scaleBy": "fixed"
+    },
+    "status": "check",
+    "notes": "Store indoors (heat and frost degrade contents).",
+    "lastChecked": null,
+    "checkIntervalDays": 182
+  },
+  {
+    "_id": "checklist:40-prescription-medicines",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Prescription medicines",
+    "sectionId": "section:safety-first-aid",
+    "order": 40,
+    "target": {
+      "amount": 5,
+      "unit": "days per person (minimum)",
+      "scaleBy": "fixed"
+    },
+    "status": "check",
+    "notes": "Indoors, not the garage.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:41-painkillers-antihistamines-diarrhoea-relief",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Painkillers, antihistamines, diarrhoea relief",
+    "sectionId": "section:safety-first-aid",
+    "order": 41,
+    "target": {
+      "amount": 1,
+      "unit": "pack of each",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Indoors.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:42-multi-tool-duct-tape-cable-ties-work-gloves",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Multi-tool, duct tape, cable ties, work gloves",
+    "sectionId": "section:safety-first-aid",
+    "order": 42,
+    "target": {
+      "amount": 1,
+      "unit": "of each",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:43-whistle",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Whistle",
+    "sectionId": "section:safety-first-aid",
+    "order": 43,
+    "target": {
+      "amount": 1,
+      "unit": "whistle",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:44-stopcock-key-know-shut-offs-for-gas-water-electricity",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Stopcock key / know shut-offs for gas, water, electricity",
+    "sectionId": "section:safety-first-aid",
+    "order": 44,
+    "target": {
+      "amount": 1,
+      "unit": "key",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Make sure every adult knows where they are.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:45-dust-masks-ffp2ffp3",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Dust masks (FFP2/FFP3)",
+    "sectionId": "section:safety-first-aid",
+    "order": 45,
+    "target": {
+      "amount": 2,
+      "unit": "per person",
+      "scaleBy": "people"
+    },
+    "status": "need",
+    "notes": "For smoke, dust or contaminated air (FEMA).",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:46-spare-glasses-contact-lenses",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Spare glasses / contact lenses",
+    "sectionId": "section:safety-first-aid",
+    "order": 46,
+    "target": {
+      "amount": 1,
+      "unit": "set per wearer",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Red Cross grab-bag item. An old prescription is fine.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:47-toilet-roll",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Toilet roll",
+    "sectionId": "section:hygiene-sanitation",
+    "order": 47,
+    "target": {
+      "amount": 6,
+      "unit": "rolls",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:48-wet-wipes",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Wet wipes",
+    "sectionId": "section:hygiene-sanitation",
+    "order": 48,
+    "target": {
+      "amount": 3,
+      "unit": "packs",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Wash without water.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:49-hand-sanitiser",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Hand sanitiser",
+    "sectionId": "section:hygiene-sanitation",
+    "order": 49,
+    "target": {
+      "amount": 2,
+      "unit": "bottles",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:50-heavy-duty-bin-bags",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Heavy-duty bin bags",
+    "sectionId": "section:hygiene-sanitation",
+    "order": 50,
+    "target": {
+      "amount": 20,
+      "unit": "bags",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Also make a makeshift toilet liner or rain cover.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:51-emergency-toilet-lidded-bucket-liners-cat-litter",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Emergency toilet – lidded bucket, liners, cat litter",
+    "sectionId": "section:hygiene-sanitation",
+    "order": 51,
+    "target": {
+      "amount": 1,
+      "unit": "kit",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "For when toilets can't be flushed.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:52-toothbrushes-toothpaste-sanitary-products",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Toothbrushes, toothpaste, sanitary products",
+    "sectionId": "section:hygiene-sanitation",
+    "order": 52,
+    "target": {
+      "amount": 1,
+      "unit": "days' supply each",
+      "scaleBy": "days"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:53-disinfectant-bleach",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Disinfectant / bleach",
+    "sectionId": "section:hygiene-sanitation",
+    "order": 53,
+    "target": {
+      "amount": 1,
+      "unit": "bottle",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:54-sleeping-bags-mats",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Sleeping bags & mats",
+    "sectionId": "section:warmth-shelter",
+    "order": 54,
+    "target": {
+      "amount": 1,
+      "unit": "per person",
+      "scaleBy": "people"
+    },
+    "status": "have",
+    "notes": "Store loose (not compressed) and dry.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:55-foil-emergency-blankets",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Foil emergency blankets",
+    "sectionId": "section:warmth-shelter",
+    "order": 55,
+    "target": {
+      "amount": 1,
+      "unit": "per person",
+      "scaleBy": "people"
+    },
+    "status": "need",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:56-warm-layers-hats-gloves-waterproofs",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Warm layers, hats, gloves, waterproofs",
+    "sectionId": "section:warmth-shelter",
+    "order": 56,
+    "target": {
+      "amount": 1,
+      "unit": "set per person",
+      "scaleBy": "people"
+    },
+    "status": "check",
+    "notes": "Probably already in camping kit – just keep together.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:57-tarp-plastic-sheeting-tape",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Tarp / plastic sheeting + tape",
+    "sectionId": "section:warmth-shelter",
+    "order": 57,
+    "target": {
+      "amount": 1,
+      "unit": "tarp",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "For broken windows or roof leaks.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:58-cash-coins-and-small-notes",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Cash – coins and small notes",
+    "sectionId": "section:documents-money",
+    "order": 58,
+    "target": {
+      "amount": 200,
+      "unit": "£",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Mix of coins and notes (Be Ready checklist). Card machines and ATMs fail in power cuts.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:59-copies-of-key-documents-waterproof-wallet",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Copies of key documents (waterproof wallet)",
+    "sectionId": "section:documents-money",
+    "order": 59,
+    "target": {
+      "amount": 1,
+      "unit": "set",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Indoors, in a grab bag – insurance, IDs, medical info.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:60-printed-contact-list-local-paper-map",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Printed contact list + local paper map",
+    "sectionId": "section:documents-money",
+    "order": 60,
+    "target": {
+      "amount": 1,
+      "unit": "of each",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Include 105 (power cut line), utility suppliers, GP and neighbours' numbers – swap contacts with neighbours.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:61-grab-bag-per-person",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Grab bag per person",
+    "sectionId": "section:documents-money",
+    "order": 61,
+    "target": {
+      "amount": 1,
+      "unit": "per person",
+      "scaleBy": "people"
+    },
+    "status": "need",
+    "notes": "For evacuation rather than staying put.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:62-written-list-of-medication-names-doses",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Written list of medication names & doses",
+    "sectionId": "section:documents-money",
+    "order": 62,
+    "target": {
+      "amount": 1,
+      "unit": "per person",
+      "scaleBy": "people"
+    },
+    "status": "need",
+    "notes": "Be Ready checklist item – on paper, kept with document copies, in case phones and online records are unavailable.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:63-household-emergency-plan",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Household emergency plan",
+    "sectionId": "section:documents-money",
+    "order": 63,
+    "target": {
+      "amount": 1,
+      "unit": "plan",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Use the Be Ready template: contacts, meeting point, who does what, where kit is kept. Talk it through with the family.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:64-priority-services-register-check-eligibility",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Priority Services Register – check eligibility",
+    "sectionId": "section:documents-money",
+    "order": 64,
+    "target": {
+      "amount": 1,
+      "unit": "check",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Free. Register with your electricity and water suppliers if anyone in the household qualifies.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:65-lidded-plastic-crates-rodent-proof",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Lidded plastic crates (rodent-proof)",
+    "sectionId": "section:garage-storage",
+    "order": 65,
+    "target": {
+      "amount": 6,
+      "unit": "crates",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Keep food out of cardboard – damp and mice.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:66-minmax-thermometer",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Min/max thermometer",
+    "sectionId": "section:garage-storage",
+    "order": 66,
+    "target": {
+      "amount": 1,
+      "unit": "thermometer",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Shows how hot and cold the garage really gets.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:67-moisture-absorbers-silica-gel",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Moisture absorbers / silica gel",
+    "sectionId": "section:garage-storage",
+    "order": 67,
+    "target": {
+      "amount": 4,
+      "unit": "absorbers",
+      "scaleBy": "fixed"
+    },
+    "status": "need",
+    "notes": "Protects tins from rust and labels from damp.",
+    "lastChecked": null,
+    "checkIntervalDays": null
+  },
+  {
+    "_id": "checklist:68-inventory-with-best-before-dates",
+    "type": "checklistItem",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Inventory with best-before dates",
+    "sectionId": "section:garage-storage",
+    "order": 68,
+    "target": {
+      "amount": 1,
+      "unit": "inventory",
+      "scaleBy": "fixed"
+    },
+    "status": "have",
+    "notes": "Review every 6 months; eat oldest first and replace.",
+    "lastChecked": null,
+    "checkIntervalDays": 182
+  },
+  {
+    "_id": "section:water",
+    "type": "checklistSection",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Water",
+    "order": 0
+  },
+  {
+    "_id": "section:food",
+    "type": "checklistSection",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Food",
+    "order": 1
+  },
+  {
+    "_id": "section:cooking-fuel",
+    "type": "checklistSection",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Cooking & fuel",
+    "order": 2
+  },
+  {
+    "_id": "section:power-light",
+    "type": "checklistSection",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Power & light",
+    "order": 3
+  },
+  {
+    "_id": "section:safety-first-aid",
+    "type": "checklistSection",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Safety & first aid",
+    "order": 4
+  },
+  {
+    "_id": "section:hygiene-sanitation",
+    "type": "checklistSection",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Hygiene & sanitation",
+    "order": 5
+  },
+  {
+    "_id": "section:warmth-shelter",
+    "type": "checklistSection",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Warmth & shelter",
+    "order": 6
+  },
+  {
+    "_id": "section:documents-money",
+    "type": "checklistSection",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Documents & money",
+    "order": 7
+  },
+  {
+    "_id": "section:garage-storage",
+    "type": "checklistSection",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Garage storage",
+    "order": 8
+  },
+  {
+    "_id": "contact:emergency-services",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Emergency services",
+    "role": "Police, fire, ambulance, coastguard",
+    "phones": ["999", "112"],
+    "priority": 0
+  },
+  {
+    "_id": "contact:police-non-emergency",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Police (non-emergency)",
+    "role": "Police",
+    "phones": ["101"],
+    "priority": 1
+  },
+  {
+    "_id": "contact:nhs-111",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "NHS 111",
+    "role": "Urgent medical advice",
+    "phones": ["111"],
+    "priority": 2
+  },
+  {
+    "_id": "contact:power-cut",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Power cut",
+    "role": "Electricity network operator",
+    "phones": ["105"],
+    "priority": 3
+  },
+  {
+    "_id": "contact:national-gas-emergency",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "National Gas emergency",
+    "role": "Gas leak or smell of gas",
+    "phones": ["0800 111 999"],
+    "priority": 4
+  },
+  {
+    "_id": "contact:water-supplier",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Water supplier",
+    "role": "Water supply and leaks",
+    "phones": [],
+    "notes": "Add the supplier and its emergency number.",
+    "priority": 5
+  },
+  {
+    "_id": "contact:gp-surgery",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "GP surgery",
+    "role": "Doctor",
+    "phones": [],
+    "notes": "Add the surgery number.",
+    "priority": 6
+  },
+  {
+    "_id": "contact:school",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "School",
+    "role": "School",
+    "phones": [],
+    "notes": "Add the school office number.",
+    "priority": 7
+  },
+  {
+    "_id": "contact:neighbours",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Neighbours",
+    "role": "Neighbour",
+    "phones": [],
+    "notes": "Swap numbers with neighbours.",
+    "priority": 8
+  },
+  {
+    "_id": "contact:home-insurer",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Home insurer",
+    "role": "Insurance claims",
+    "phones": [],
+    "notes": "Add the policy number and claims line.",
+    "priority": 9
+  },
+  {
+    "_id": "contact:vet",
+    "type": "contact",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Vet",
+    "role": "Vet",
+    "phones": [],
+    "notes": "Add the practice and out-of-hours numbers.",
+    "priority": 10
+  },
+  {
+    "_id": "purchase:01-mountain-house-freeze-dried-main-meal-po",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Mountain House freeze-dried main meal pouches (mixed flavours)",
+    "category": "Ready meals",
+    "quantity": "9 meals (≈5 two-serving pouches)",
+    "fillsGap": "9 of the 15 missing mains",
+    "shelfLife": "Up to 30 years",
+    "status": "to_buy",
+    "notes": "Maker's 30-year taste guarantee if kept below 24°C. Just add boiling water. Imported – Amazon UK or UK prepper shops.",
+    "order": 1
+  },
+  {
+    "_id": "purchase:02-expedition-foods-survivor-foods-25-year-",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Expedition Foods 'Survivor Foods' 25-year tins (UK alternative)",
+    "category": "Ready meals",
+    "quantity": "1–2 tins",
+    "fillsGap": "Alternative to Mountain House",
+    "shelfLife": "25 years from manufacture",
+    "status": "to_buy",
+    "notes": "UK-made (Hull). Bulk tin, so portion out once opened. Their standard pouches are only up to 5 years.",
+    "order": 2
+  },
+  {
+    "_id": "purchase:03-rolled-porridge-oats",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Rolled porridge oats",
+    "category": "Breakfast",
+    "quantity": "1.5 kg",
+    "fillsGap": "9 breakfasts with plenty spare",
+    "shelfLife": "1–2 yrs in packet; 20+ yrs resealed in Mylar",
+    "status": "to_buy",
+    "notes": "Also thickens stews and makes flapjack-style snacks.",
+    "order": 3
+  },
+  {
+    "_id": "purchase:04-non-fat-milk-powder",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Non-fat milk powder",
+    "category": "Breakfast",
+    "quantity": "500 g",
+    "fillsGap": "Porridge, hot drinks, mash",
+    "shelfLife": "15–20 yrs sealed (non-fat only)",
+    "status": "to_buy",
+    "notes": "Full-fat powder goes rancid far sooner.",
+    "order": 4
+  },
+  {
+    "_id": "purchase:05-freeze-dried-breakfast-pouches-eg-scramb",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Freeze-dried breakfast pouches (e.g. scrambled egg & bacon)",
+    "category": "Breakfast",
+    "quantity": "3 pouches",
+    "fillsGap": "Variety for breakfasts",
+    "shelfLife": "Up to 30 years",
+    "status": "to_buy",
+    "notes": "A hot cooked breakfast boosts morale.",
+    "order": 5
+  },
+  {
+    "_id": "purchase:06-white-rice-long-grain-basmati",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "White rice (long grain / basmati)",
+    "category": "Staples to cook with",
+    "quantity": "2 kg",
+    "fillsGap": "Base for ~3 of the 6 cooked mains",
+    "shelfLife": "4–5 yrs in packet; 25+ yrs in Mylar with O₂ absorber",
+    "status": "to_buy",
+    "notes": "White only – brown rice goes rancid within a year.",
+    "order": 6
+  },
+  {
+    "_id": "purchase:07-dried-pasta-egg-free",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Dried pasta (egg-free)",
+    "category": "Staples to cook with",
+    "quantity": "2 kg",
+    "fillsGap": "Base for ~3 of the 6 cooked mains",
+    "shelfLife": "2–3 yrs in packet; 20+ yrs sealed",
+    "status": "to_buy",
+    "notes": "Egg pasta keeps less well.",
+    "order": 7
+  },
+  {
+    "_id": "purchase:08-couscous",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Couscous",
+    "category": "Staples to cook with",
+    "quantity": "1 kg",
+    "fillsGap": "Fast side / main base",
+    "shelfLife": "~2 years",
+    "status": "to_buy",
+    "notes": "Needs only boiling water – the most fuel-efficient carb.",
+    "order": 8
+  },
+  {
+    "_id": "purchase:09-red-lentils",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Red lentils",
+    "category": "Staples to cook with",
+    "quantity": "1 kg",
+    "fillsGap": "Dal, soups, bulking out sauces",
+    "shelfLife": "4–5 yrs; 25+ yrs sealed",
+    "status": "to_buy",
+    "notes": "Cook in ~15 min with no soaking – good on limited gas.",
+    "order": 9
+  },
+  {
+    "_id": "purchase:10-plain-instant-mashed-potato-flakes-bulk",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Plain instant mashed potato flakes (bulk)",
+    "category": "Staples to cook with",
+    "quantity": "1 kg",
+    "fillsGap": "Long-term replacement for Idahoan pots",
+    "shelfLife": "Up to 30 yrs sealed (plain)",
+    "status": "to_buy",
+    "notes": "Plain flakes outlast flavoured pots, which contain fats.",
+    "order": 10
+  },
+  {
+    "_id": "purchase:11-freeze-dried-meat-chicken-and-beef-mince",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Freeze-dried meat – chicken and beef mince",
+    "category": "Protein",
+    "quantity": "2 tins / large pouches",
+    "fillsGap": "Protein for the cooked mains",
+    "shelfLife": "Around 25 years",
+    "status": "to_buy",
+    "notes": "Add to rice, pasta or couscous with a sauce.",
+    "order": 11
+  },
+  {
+    "_id": "purchase:12-tinned-meat-corned-beef-chicken-ham-chil",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Tinned meat – corned beef, chicken, ham, chilli",
+    "category": "Protein",
+    "quantity": "6 tins",
+    "fillsGap": "No-cook meals (Be Ready asks for these)",
+    "shelfLife": "2–5 yrs (date on tin)",
+    "status": "to_buy",
+    "notes": "Ring-pull. Eat and replace once a year – the only items needing regular rotation.",
+    "order": 12
+  },
+  {
+    "_id": "purchase:13-tinned-fish-tuna-sardines-mackerel",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Tinned fish – tuna, sardines, mackerel",
+    "category": "Protein",
+    "quantity": "6 tins",
+    "fillsGap": "No-cook protein",
+    "shelfLife": "3–4 yrs (date on tin)",
+    "status": "to_buy",
+    "notes": "Rotate with the tinned meat.",
+    "order": 13
+  },
+  {
+    "_id": "purchase:14-freeze-dried-mixed-vegetables-peas-carro",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Freeze-dried mixed vegetables (peas, carrots, sweetcorn)",
+    "category": "Veg & fruit",
+    "quantity": "1 tin / large pouch",
+    "fillsGap": "Veg for cooked mains",
+    "shelfLife": "Up to 20–25 years",
+    "status": "to_buy",
+    "notes": "Rehydrate straight into the pan.",
+    "order": 14
+  },
+  {
+    "_id": "purchase:15-tinned-chopped-tomatoes-passata",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Tinned chopped tomatoes / passata",
+    "category": "Veg & fruit",
+    "quantity": "4 tins",
+    "fillsGap": "Sauce base for pasta, rice, lentils",
+    "shelfLife": "2–3 yrs",
+    "status": "to_buy",
+    "notes": "Rotate annually with the tins above.",
+    "order": 15
+  },
+  {
+    "_id": "purchase:16-freeze-dried-fruit-apple-strawberry",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Freeze-dried fruit (apple, strawberry)",
+    "category": "Veg & fruit",
+    "quantity": "2 pouches / 1 tin",
+    "fillsGap": "Breakfasts and snacks",
+    "shelfLife": "Up to 25 years",
+    "status": "to_buy",
+    "notes": "Good on porridge or straight from the pack.",
+    "order": 16
+  },
+  {
+    "_id": "purchase:17-stock-cubes-chicken-beef-veg",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Stock cubes (chicken, beef, veg)",
+    "category": "Flavour & cooking",
+    "quantity": "2 packs",
+    "fillsGap": "Turns staples into soups and stews",
+    "shelfLife": "2+ yrs",
+    "status": "to_buy",
+    "order": 17
+  },
+  {
+    "_id": "purchase:18-spice-kit-curry-powder-chilli-flakes-mix",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Spice kit – curry powder, chilli flakes, mixed herbs, garlic granules, black pepper",
+    "category": "Flavour & cooking",
+    "quantity": "1 small jar each",
+    "fillsGap": "Variety from the same staples",
+    "shelfLife": "2–4 yrs (lose flavour, not safety)",
+    "status": "to_buy",
+    "notes": "This is what makes the cooked meals different from each other.",
+    "order": 18
+  },
+  {
+    "_id": "purchase:19-salt-sugar-and-honey",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Salt, sugar and honey",
+    "category": "Flavour & cooking",
+    "quantity": "1 each",
+    "fillsGap": "Cooking and morale",
+    "shelfLife": "Indefinite if kept dry",
+    "status": "to_buy",
+    "order": 19
+  },
+  {
+    "_id": "purchase:20-ghee-or-cooking-oil",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Ghee or cooking oil",
+    "category": "Flavour & cooking",
+    "quantity": "1 jar / bottle",
+    "fillsGap": "Frying and flavour",
+    "shelfLife": "1–2 yrs",
+    "status": "to_buy",
+    "notes": "Fats are the shortest-lived staple – rotate yearly.",
+    "order": 20
+  },
+  {
+    "_id": "purchase:21-emergency-ration-bars-eg-datrex-or-sos",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Emergency ration bars (e.g. Datrex or SOS)",
+    "category": "Snacks & desserts",
+    "quantity": "1 pack per person",
+    "fillsGap": "No-cook calorie backup",
+    "shelfLife": "Around 5 years",
+    "status": "to_buy",
+    "notes": "Edible without water or fuel; withstand heat better than chocolate.",
+    "order": 21
+  },
+  {
+    "_id": "purchase:22-freeze-dried-desserts-eg-custard-apple-c",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Freeze-dried desserts (e.g. custard, apple crumble)",
+    "category": "Snacks & desserts",
+    "quantity": "3 pouches",
+    "fillsGap": "Replaces the expired puddings",
+    "shelfLife": "Up to 5 years",
+    "status": "to_buy",
+    "notes": "Treats matter in a long power cut.",
+    "order": 22
+  },
+  {
+    "_id": "purchase:23-tea-bags-instant-coffee-hot-chocolate",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Tea bags, instant coffee, hot chocolate",
+    "category": "Drinks",
+    "quantity": "1 pack each",
+    "fillsGap": "Hot drinks for 3 days+",
+    "shelfLife": "1–2 yrs (best before)",
+    "status": "to_buy",
+    "notes": "Keep in an airtight tub.",
+    "order": 23
+  },
+  {
+    "_id": "purchase:24-mylar-bags-oxygen-absorbers-or-food-grad",
+    "type": "purchase",
+    "updatedAt": "2026-11-15T00:00:00.000Z",
+    "name": "Mylar bags + oxygen absorbers (or food-grade lidded buckets)",
+    "category": "Storage",
+    "quantity": "1 starter kit",
+    "fillsGap": "Lets rice, pasta, oats and lentils last 20+ years",
+    "shelfLife": "–",
+    "status": "to_buy",
+    "notes": "Repacking dry staples in Mylar with O₂ absorbers is what cuts down on rotation. Also stops mice.",
+    "order": 24
+  }
+]
