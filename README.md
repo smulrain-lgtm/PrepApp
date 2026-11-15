@@ -25,7 +25,7 @@ Known iOS limits:
 | ----- | ---------------------------------------------------------------- | ----------- |
 | 0     | Scaffold, CI, GitHub Pages, installable offline shell, Pi server | Done        |
 | 1     | Data model and readiness engine                                  | Done        |
-| 2     | Local MVP: dashboard, inventory, settings, JSON backup           | Not started |
+| 2     | Local MVP: dashboard, inventory, settings, JSON backup           | Done        |
 | 3     | Checklist and emergency information                              | Not started |
 | 4     | Sync with the Pi                                                 | Not started |
 | 5     | Polish and release                                               | Not started |

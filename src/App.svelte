@@ -1,27 +1,40 @@
 <script lang="ts">
   import { applyUpdate, pwa } from './lib/pwa.svelte';
+  import { store } from './lib/store.svelte';
   import { isTabId, tabs, type TabId } from './lib/tabs';
+  import Dashboard from './views/Dashboard.svelte';
+  import Inventory from './views/Inventory.svelte';
   import Placeholder from './views/Placeholder.svelte';
   import Settings from './views/Settings.svelte';
 
-  function tabFromHash(): TabId {
-    const id = location.hash.replace(/^#\/?/, '');
-    return isTabId(id) ? id : 'dashboard';
+  interface Route {
+    tab: TabId;
+    params: URLSearchParams;
   }
 
-  let active = $state<TabId>(tabFromHash());
+  /** #/inventory?status=expired → { tab: 'inventory', params: status=expired } */
+  function parseHash(): Route {
+    const [path, query = ''] = location.hash.replace(/^#\/?/, '').split('?');
+    return { tab: isTabId(path) ? path : 'dashboard', params: new URLSearchParams(query) };
+  }
+
+  let route = $state<Route>(parseHash());
   let online = $state(navigator.onLine);
 
+  const active = $derived(route.tab);
   const current = $derived(tabs.find((t) => t.id === active)!);
 
   function select(id: TabId) {
-    active = id;
+    route = { tab: id, params: new URLSearchParams() };
     history.replaceState(null, '', `#/${id}`);
+    window.scrollTo(0, 0);
   }
+
+  void store.init();
 </script>
 
 <svelte:window
-  onhashchange={() => (active = tabFromHash())}
+  onhashchange={() => (route = parseHash())}
   ononline={() => (online = true)}
   onoffline={() => (online = false)}
 />
@@ -66,10 +79,22 @@
       </div>
     {/if}
 
-    {#if active === 'settings'}
+    {#if store.error}
+      <div class="card error" role="alert">{store.error}</div>
+    {:else if !store.ready}
+      <p class="muted" aria-live="polite">Loading…</p>
+    {:else if active === 'dashboard'}
+      <Dashboard />
+    {:else if active === 'inventory'}
+      <Inventory params={route.params} />
+    {:else if active === 'settings'}
       <Settings />
     {:else}
       <Placeholder title={current.label} stage={current.stage} />
+    {/if}
+
+    {#if store.notice}
+      <div class="toast" role="status" aria-live="polite">{store.notice}</div>
     {/if}
   </main>
 </div>
@@ -143,6 +168,26 @@
   .pill.ready {
     background: var(--surface-2);
     color: var(--text-2);
+  }
+
+  .error {
+    background: var(--bad-bg);
+    color: var(--bad);
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 12px);
+    max-width: min(92vw, 480px);
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    background: var(--text);
+    color: var(--bg);
+    font-size: 0.9rem;
+    z-index: 20;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
   }
 
   .update {

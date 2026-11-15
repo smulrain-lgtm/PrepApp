@@ -1,4 +1,6 @@
 <script lang="ts">
+  import DataSettings from './DataSettings.svelte';
+  import ScenarioSettings from './ScenarioSettings.svelte';
   import { loadSyncSettings, saveSyncSettings } from '../lib/device-settings';
   import { testConnection, type ConnectionResult } from '../lib/sync-endpoint';
 
@@ -33,6 +35,8 @@
 </script>
 
 <h1>Settings</h1>
+
+<ScenarioSettings />
 
 <section aria-labelledby="sync-heading">
   <h2 id="sync-heading">Sync with the Pi</h2>
@@ -77,6 +81,8 @@
     {/if}
   </form>
 </section>
+
+<DataSettings />
 
 <section aria-labelledby="about-heading">
   <h2 id="about-heading">About</h2>

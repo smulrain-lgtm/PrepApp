@@ -7,6 +7,8 @@
  */
 import { batchQuantities } from '../readiness';
 import { snapshotFromDocs } from '../model/snapshot';
+import { stripRevs } from '../backup';
+import { fifoOrder } from './fifo';
 import type { AnyDoc, Batch, IsoDate, Movement, MovementReason, Snapshot } from '../model/types';
 
 export type Db = PouchDB.Database<AnyDoc>;
@@ -28,13 +30,7 @@ export interface TakeResult {
   movements: Movement[];
 }
 
-/** Earliest best-before first; undated batches last; ties by id for stability. */
-export function fifoOrder(a: Batch, b: Batch): number {
-  if (a.bestBefore === b.bestBefore) return a._id.localeCompare(b._id);
-  if (a.bestBefore === null) return 1;
-  if (b.bestBefore === null) return -1;
-  return a.bestBefore.localeCompare(b.bestBefore);
-}
+export { fifoOrder };
 
 export class Repository {
   private readonly now: () => string;
@@ -48,6 +44,19 @@ export class Repository {
     this.randomId = options.randomId ?? (() => crypto.randomUUID().slice(0, 8));
   }
 
+  /** Load documents into an empty database (first run, or restoring a backup). */
+  async importDocs(docs: AnyDoc[]): Promise<void> {
+    const results = await this.db.bulkDocs(stripRevs(docs));
+    const failed = results.filter((r) => 'error' in r && r.error);
+    if (failed.length) throw new Error(`Could not write ${failed.length} of ${docs.length} records`);
+  }
+
+  /** Every document, without revision ids, for a JSON backup. */
+  async exportDocs(): Promise<AnyDoc[]> {
+    const all = await this.db.allDocs({ include_docs: true });
+    return stripRevs(all.rows.map((r) => r.doc).filter(Boolean) as AnyDoc[]);
+  }
+
   /** Load the seed on first run. Returns true when it wrote anything. */
   async seedIfEmpty(seed: AnyDoc[]): Promise<boolean> {
     try {
@@ -56,9 +65,7 @@ export class Repository {
     } catch (error) {
       if ((error as { status?: number }).status !== 404) throw error;
     }
-    const results = await this.db.bulkDocs(seed);
-    const failed = results.filter((r) => 'error' in r && r.error);
-    if (failed.length) throw new Error(`Seeding failed for ${failed.length} documents`);
+    await this.importDocs(seed);
     return true;
   }
 
@@ -136,6 +143,21 @@ export class Repository {
     }
     await this.recordMovement(batch._id, quantity, reason);
     return batch;
+  }
+
+  /**
+   * The item list's +1: add to the batch with the latest best-before date
+   * (the pack most like one just bought). Returns null when the item has no
+   * batch yet, so the caller can ask for a date.
+   */
+  async addOneToLatest(itemId: string): Promise<Batch | null> {
+    const snap = await this.loadSnapshot();
+    const batches = snap.batches.filter((b) => b.itemId === itemId && !b.deleted).sort(fifoOrder);
+    const dated = batches.filter((b) => b.bestBefore !== null);
+    const latest = dated.length ? dated[dated.length - 1] : batches[0];
+    if (!latest) return null;
+    await this.recordMovement(latest._id, 1, 'added');
+    return latest;
   }
 
   /** Take units from an item, soonest best-before first (first-expiry, first-out). */
