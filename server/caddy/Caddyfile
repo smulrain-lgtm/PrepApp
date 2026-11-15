@@ -43,7 +43,13 @@
 		# Lets a public site (GitHub Pages) talk to a device on the home network
 		# in browsers that ask for this (Private Network Access).
 		Access-Control-Allow-Private-Network "true"
-		Vary "Origin"
+	}
+
+	# On every response, so a browser never reuses a stored reply without the
+	# CORS headers (e.g. from opening /_up directly in Safari) for the app.
+	header {
+		+Vary "Origin"
+		Cache-Control "no-store"
 	}
 
 	@preflight {
