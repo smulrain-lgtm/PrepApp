@@ -1,0 +1,73 @@
+# PrepApp sync endpoint. All values come from server/.env.
+{
+	email {$ACME_EMAIL}
+}
+
+# --- Certificate via DNS challenge: pick one with DNS_PROVIDER in .env ---------
+(dns-cloudflare) {
+	tls {
+		dns cloudflare {$CLOUDFLARE_API_TOKEN}
+		resolvers 1.1.1.1
+	}
+}
+
+(dns-porkbun) {
+	tls {
+		dns porkbun {
+			api_key {$PORKBUN_API_KEY}
+			api_secret_key {$PORKBUN_API_SECRET_KEY}
+		}
+		resolvers 1.1.1.1
+	}
+}
+
+# Fallback / testing: Caddy's own certificate authority. Devices must then
+# install and trust Caddy's root certificate (see server/README.md).
+(dns-internal) {
+	tls internal
+}
+
+{$SYNC_HOST} {
+	import dns-{$DNS_PROVIDER}
+	encode gzip
+
+	# --- CORS: only the PrepApp web app may call this server from a browser ----
+	@fromApp header Origin {$APP_ORIGIN}
+	header @fromApp {
+		Access-Control-Allow-Origin "{$APP_ORIGIN}"
+		Access-Control-Allow-Credentials "true"
+		Access-Control-Allow-Methods "GET, HEAD, POST, PUT, DELETE, OPTIONS"
+		Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, Referer, X-Requested-With"
+		Access-Control-Expose-Headers "ETag, Content-Type, Cache-Control"
+		Access-Control-Max-Age "600"
+		# Lets a public site (GitHub Pages) talk to a device on the home network
+		# in browsers that ask for this (Private Network Access).
+		Access-Control-Allow-Private-Network "true"
+		Vary "Origin"
+	}
+
+	@preflight {
+		method OPTIONS
+		header Origin {$APP_ORIGIN}
+	}
+	handle @preflight {
+		respond 204
+	}
+
+	# --- Only the paths sync needs reach CouchDB ----------------------------------
+	# /_up                 health check (no login needed)
+	# /<db> and /<db>/...  the household database (login needed)
+	# Everything else (/_utils admin UI, /_config, /_node, /_users, /_all_dbs ...)
+	# is refused here.
+	@allowed path /_up /{$COUCHDB_DB} /{$COUCHDB_DB}/*
+	handle @allowed {
+		reverse_proxy {$COUCHDB_UPSTREAM:couchdb:5984} {
+			# Without this, a wrong password could make iOS show its own login pop-up.
+			header_down -WWW-Authenticate
+		}
+	}
+
+	handle {
+		respond "Not found" 404
+	}
+}

@@ -1,0 +1,42 @@
+# PrepApp sync server for the Raspberry Pi (arm64).
+#
+#   iPhone / iPad app (GitHub Pages)
+#        │  HTTPS, home network or OpenVPN only
+#        ▼
+#   caddy   :443  – HTTPS certificate (Let's Encrypt via DNS), CORS, path filter
+#        │  plain HTTP inside Docker only
+#        ▼
+#   couchdb :5984 – the household database (never exposed to the network)
+#
+# Configure in .env (copy .env.example). Start with:  docker compose up -d --build
+
+services:
+  couchdb:
+    image: couchdb:3
+    restart: unless-stopped
+    environment:
+      COUCHDB_USER: ${COUCHDB_ADMIN_USER}
+      COUCHDB_PASSWORD: ${COUCHDB_ADMIN_PASSWORD}
+    volumes:
+      - ./data/couchdb:/opt/couchdb/data
+      - ./couchdb/prepapp.ini:/opt/couchdb/etc/local.d/prepapp.ini:ro
+    # Only reachable from the Pi itself (for the setup script), not from the network.
+    ports:
+      - '127.0.0.1:5984:5984'
+
+  caddy:
+    build: ./caddy
+    restart: unless-stopped
+    depends_on:
+      - couchdb
+    env_file: .env
+    ports:
+      - '443:443'
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

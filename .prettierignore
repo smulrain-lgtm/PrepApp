@@ -1,0 +1,9 @@
+dist
+dev-dist
+node_modules
+package-lock.json
+docs/seed-source
+server/data
+test-results
+playwright-report
+public/icons
