@@ -44,9 +44,23 @@ describe('testConnection', () => {
     expect(fetchImpl).toHaveBeenCalledWith('https://prep.mulras.uk/_up', expect.anything());
   });
 
-  it('reports unreachable when the request fails', async () => {
+  it('reports a network failure when neither request gets through', async () => {
     const fetchImpl = vi.fn().mockRejectedValue(new TypeError('Load failed'));
-    expect((await testConnection('prep.mulras.uk', { fetchImpl })).kind).toBe('unreachable');
+    const result = await testConnection('prep.mulras.uk', { fetchImpl });
+    expect(result.kind).toBe('unreachable');
+    expect(result.message).toContain('Could not reach https://prep.mulras.uk');
+    expect(result.message).toContain('TypeError: Load failed');
+  });
+
+  it('reports a browser block when only the no-cors request gets through', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('Load failed'))
+      .mockResolvedValueOnce(new Response(null, { status: 200 }));
+    const result = await testConnection('prep.mulras.uk', { fetchImpl });
+    expect(result.kind).toBe('unreachable');
+    expect(result.message).toContain('blocked the app from reading the reply');
+    expect(fetchImpl.mock.calls[1][1].mode).toBe('no-cors');
   });
 
   it('checks the database with basic auth', async () => {

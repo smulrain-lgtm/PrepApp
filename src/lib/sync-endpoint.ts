@@ -61,6 +61,15 @@ function basicAuth(username: string, password: string): string {
   return `Basic ${btoa(binary)}`;
 }
 
+function isTimeout(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'AbortError';
+}
+
+function describeError(error: unknown): string {
+  if (error instanceof Error) return `${error.name}: ${error.message}`;
+  return String(error);
+}
+
 async function timedFetch(
   fetchImpl: typeof fetch,
   url: string,
@@ -92,7 +101,7 @@ export async function testConnection(
   const timeoutMs = options.timeoutMs ?? 8000;
 
   try {
-    const up = await timedFetch(fetchImpl, `${base}/_up`, { method: 'GET' }, timeoutMs);
+    const up = await timedFetch(fetchImpl, `${base}/_up`, { method: 'GET', cache: 'no-store' }, timeoutMs);
     if (!up.ok) {
       return {
         kind: 'unreachable',
@@ -100,12 +109,31 @@ export async function testConnection(
       };
     }
   } catch (error) {
-    const timedOut = error instanceof DOMException && error.name === 'AbortError';
+    const detail = describeError(error);
+    if (isTimeout(error)) {
+      return {
+        kind: 'unreachable',
+        message: `No answer from ${base} within ${timeoutMs / 1000} seconds. Are you at home or on the VPN? (${detail})`,
+      };
+    }
+    // Tell "the network can't get there" apart from "the browser got there but
+    // refused to hand the reply to the app" (cross-site / local-network rules).
+    // A no-cors request skips those checks: if it gets through, the Pi is reachable.
+    const reachedAnyway = await timedFetch(
+      fetchImpl,
+      `${base}/_up`,
+      { method: 'GET', mode: 'no-cors', cache: 'no-store' },
+      timeoutMs,
+    ).then(
+      () => true,
+      () => false,
+    );
     return {
       kind: 'unreachable',
-      message: timedOut
-        ? 'No answer within 8 seconds. Are you at home or on the VPN?'
-        : 'Could not reach the server. Check you are at home or on the VPN, and that the address and certificate are right.',
+      message: reachedAnyway
+        ? `The Pi at ${base} answered, but this device blocked the app from reading the reply. ` +
+          `Check Settings › Safari for content blockers, iCloud Private Relay or Lockdown Mode. (${detail})`
+        : `Could not reach ${base}. Check you are at home or on the VPN, and that the address is exactly right. (${detail})`,
     };
   }
 
