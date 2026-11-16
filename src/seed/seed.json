@@ -30,7 +30,9 @@
       "kcalPerPerson": 2000,
       "gasGPerPerson": 77
     },
-    "criticalMetrics": ["water_l", "kcal", "pet_food_g", "fuel_g", "med_days"],
+    "criticalMetrics": ["water_l", "kcal", "pet_food_g", "fuel_g"],
+    "goalDays": 14,
+    "pastDateRule": "exclude",
     "updatedAt": "2026-11-15T00:00:00.000Z"
   },
   {

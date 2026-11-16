@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import seedJson from '../seed/seed.json';
 import { snapshotFromDocs } from './model/snapshot';
+import { MEDICINE_ESSENTIALS } from './model/constants';
+import { applyScenario } from './scenario';
 import {
   band,
+  dateFactor,
+  medicineEssentials,
+  pastDateRule,
   computeReadiness,
   dailyDemand,
   expiryStatus,
@@ -113,7 +118,10 @@ describe('Stage 1 gate (seed data, 15 Nov 2026)', () => {
 
   it('raises food days when "Consider expiry dates" is OFF (the 18 expired packs count)', () => {
     const on = metric(computeReadiness(input(), TODAY), 'kcal');
-    const off = metric(computeReadiness(input({ considerExpiry: false }), TODAY), 'kcal');
+    const off = metric(
+      computeReadiness(input({ considerExpiry: false, pastDateRule: 'include' }), TODAY),
+      'kcal',
+    );
     expect(off.stock).toBe(14850);
     expect(off.days).toBeCloseTo(2.475, 3);
     expect(off.days!).toBeGreaterThan(on.days!);
@@ -231,6 +239,87 @@ describe('readiness rules', () => {
     expect(exclusionReason(item, batch, { ...seed.settings, freezing: true }, TODAY)).toBe('freezing');
     expect(exclusionReason(item, batch, { ...seed.settings, indoorOnly: true }, TODAY)).toBe('not_indoors');
     expect(exclusionReason(item, batch, seed.settings, TODAY)).toBeNull();
+  });
+});
+
+describe('release 1.1 rules', () => {
+  it('tapers food past its best-before: full for 6 months, nothing after 12', () => {
+    expect(dateFactor('2026-12-01', TODAY, 'taper')).toBe(1); // not yet past
+    expect(dateFactor('2026-06-01', TODAY, 'taper')).toBe(1); // 5½ months past
+    expect(dateFactor('2025-11-14', TODAY, 'taper')).toBe(0); // a year past
+    const mid = dateFactor('2026-02-15', TODAY, 'taper'); // 9 months past
+    expect(mid).toBeGreaterThan(0.4);
+    expect(mid).toBeLessThan(0.6);
+    expect(dateFactor('2020-01-01', TODAY, 'include')).toBe(1);
+    expect(dateFactor('2026-11-14', TODAY, 'exclude')).toBe(0);
+  });
+
+  it('with the taper rule, recently expired food still counts', () => {
+    const exclude = metric(computeReadiness(input({ pastDateRule: 'exclude' }), TODAY), 'kcal').stock;
+    const taper = metric(computeReadiness(input({ pastDateRule: 'taper' }), TODAY), 'kcal').stock;
+    const include = metric(computeReadiness(input({ pastDateRule: 'include' }), TODAY), 'kcal').stock;
+    expect(exclude).toBe(8300);
+    expect(include).toBe(14850);
+    // Hot chocolate (Oct 2026) and the chocolate puddings (Nov 2026) are within 6 months: full.
+    expect(taper).toBeGreaterThanOrEqual(8300 + 100 + 700);
+    expect(taper).toBeLessThan(include);
+  });
+
+  it('older settings without the rule follow "Consider expiry dates"', () => {
+    const old = { ...seed.settings, pastDateRule: undefined };
+    expect(pastDateRule({ ...old, considerExpiry: true })).toBe('exclude');
+    expect(pastDateRule({ ...old, considerExpiry: false })).toBe('include');
+  });
+
+  it('medicines never set the days figure, even in older settings', () => {
+    const r = computeReadiness(input({ criticalMetrics: ['water_l', 'kcal', 'med_days'] }), TODAY);
+    expect(metric(r, 'med_days').critical).toBe(false);
+  });
+
+  it('counts medicine essentials from the checklist', () => {
+    const e = medicineEssentials(seed.checklistItems, MEDICINE_ESSENTIALS);
+    expect(e).toEqual({
+      covered: 0,
+      total: 4,
+      missing: [
+        'First aid kit',
+        'Prescription medicines',
+        'Painkillers, antihistamines, diarrhoea relief',
+        'Oral rehydration sachets',
+      ],
+    });
+  });
+
+  it('reports the goal, never below the target', () => {
+    expect(computeReadiness(input({ goalDays: 30 }), TODAY).goalDays).toBe(30);
+    expect(computeReadiness(input({ goalDays: 2, targetDays: 5 }), TODAY).goalDays).toBe(5);
+  });
+
+  it('scenarios: garage lost counts indoor stock only; go bag only grab bags, 3 days', () => {
+    const extra = merge(garageWater, indoorWater);
+    const lost = computeReadiness(
+      { ...input({}, extra), settings: applyScenario(input().settings, 'garage_lost') },
+      TODAY,
+    );
+    expect(metric(lost, 'water_l').stock).toBe(12);
+    const bagWater = stock(
+      'bag-water',
+      { location: 'grab_bag', perUnit: { metric: 'water_l', amount: 1 } },
+      3,
+    );
+    const bag = computeReadiness(
+      { ...input({}, merge(extra, bagWater)), settings: applyScenario(input().settings, 'go_bag') },
+      TODAY,
+    );
+    expect(metric(bag, 'water_l').stock).toBe(3);
+    expect(metric(bag, 'kcal').stock).toBe(0);
+    expect(bag.targetDays).toBe(3);
+    expect(metric(bag, 'fuel_g').critical).toBe(false);
+  });
+
+  it('scenarios: a power cut makes lighting count', () => {
+    const r = computeReadiness({ ...input(), settings: applyScenario(input().settings, 'power_cut') }, TODAY);
+    expect(metric(r, 'light_days').critical).toBe(true);
   });
 });
 

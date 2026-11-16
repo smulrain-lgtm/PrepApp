@@ -153,4 +153,5 @@ export const EXCLUSION_LABEL: Record<ExclusionReason, string> = {
   use_soon: 'Not counted: use soon is treated as at risk',
   not_indoors: 'Not counted: indoor stock only',
   freezing: 'Not counted: may freeze outdoors',
+  not_in_kit: 'Not counted: not in the grab bags',
 };

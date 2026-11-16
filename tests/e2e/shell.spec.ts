@@ -41,7 +41,7 @@ test('launches and works with the network off once installed', async ({ page, co
 });
 
 test('connection test explains an unreachable server', async ({ page }) => {
-  await page.goto('./#/settings');
+  await page.goto('./#/settings?s=sync');
   await page.getByLabel('Sync address').fill('https://127.0.0.1:9');
   await page.getByRole('button', { name: 'Test connection' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Not connected' })).toBeVisible({ timeout: 15000 });

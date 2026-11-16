@@ -4,6 +4,12 @@ import { readFileSync } from 'node:fs';
 const nav = (page: Page, name: string) =>
   page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name }).click();
 
+/** Open a Settings page by its card title, e.g. "Household". */
+async function openSettings(page: Page, title: string) {
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('link', { name: new RegExp(`^${title}`) }).click();
+}
+
 test.beforeEach(async ({ page }) => {
   page.on('dialog', (dialog) => dialog.accept());
   await page.goto('./');
@@ -15,7 +21,7 @@ test('checklist targets scale with the scenario', async ({ page }) => {
   const water = page.getByTestId('line-checklist:01-drinking-cooking-water');
   await expect(water).toContainText('Target 42 L');
 
-  await nav(page, 'Settings');
+  await openSettings(page, 'Household');
   await page.getByRole('button', { name: 'Increase People' }).click();
   await page.getByRole('button', { name: 'Increase People' }).click();
   await nav(page, 'Checklist');
@@ -87,7 +93,7 @@ test('shut-off photo is stored, shown and included in the backup', async ({ page
   await dialog.getByRole('button', { name: 'Done' }).click();
   await expect(page.getByRole('img', { name: 'Photo: Water stopcock' })).toBeVisible();
 
-  await nav(page, 'Settings');
+  await openSettings(page, 'Backup and data');
   const downloading = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export backup (JSON)' }).click();
   const backup = JSON.parse(readFileSync((await (await downloading).path())!, 'utf8'));

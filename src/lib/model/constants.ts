@@ -63,9 +63,22 @@ export const DEFAULT_SETTINGS: Omit<Settings, 'updatedAt'> = {
   freezing: false,
   warningMonths: 6,
   dailyNeeds: DEFAULT_DAILY_NEEDS,
-  // Lighting is shown as checklist completion, not as a days bar.
-  criticalMetrics: ['water_l', 'kcal', 'pet_food_g', 'fuel_g', 'med_days'],
+  // Medicines are shown as essentials covered, and lighting via the checklist
+  // (it becomes critical in the power-cut scenario), so neither sets the days.
+  criticalMetrics: ['water_l', 'kcal', 'pet_food_g', 'fuel_g'],
+  goalDays: 14,
+  pastDateRule: 'exclude',
 };
+
+export const GOAL_PRESETS = [7, 14, 30, 90, 180, 365];
+
+/** Medicine essentials, matched by checklist line name; covered when marked Have. */
+export const MEDICINE_ESSENTIALS = [
+  'First aid kit',
+  'Prescription medicines',
+  'Painkillers, antihistamines, diarrhoea relief',
+  'Oral rehydration sachets',
+];
 
 /** Dates before this are treated as suspect: "check printed date". */
 export const SUSPECT_DATE_BEFORE = '2005-01-01';

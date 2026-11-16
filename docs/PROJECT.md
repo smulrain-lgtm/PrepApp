@@ -1,6 +1,6 @@
 # PrepApp — project record
 
-The complete reference for PrepApp: what it is for, every decision made, how it is built, how to run it, and what is left. Written at version 1.0.1 (16 Nov 2026). For day-to-day use, see the [README](../README.md); for the Pi, see [`server/README.md`](../server/README.md).
+The complete reference for PrepApp: what it is for, every decision made, how it is built, how to run it, and what is left. Written at version 1.0.1 (16 Nov 2026); updated for 1.1.0. For day-to-day use, see the [README](../README.md); for the Pi, see [`server/README.md`](../server/README.md).
 
 **Contents**
 
@@ -320,7 +320,7 @@ On 16 Nov 2026 we reviewed **Provision** (provisionapp.co.uk), a free UK emergen
 
 ### Recommended releases
 
-**1.1 — Dashboard and store settings** (modest effort, high value)
+**1.1 — Dashboard and store settings** — **released as 1.1.0** (scenarios: Home / Power cut / Garage lost / Go bag)
 
 1. Dashboard redesign: big headline number, ruler to the goal, **runs out first → Restock** button, colour-coded category tiles with icons and plain status lines ("47 days short", "Past your goal").
 2. Scenario switcher on the dashboard: Home / Power cut / No water / Go bag, as presets over our existing switches.

@@ -8,6 +8,12 @@ import { readFileSync } from 'node:fs';
 const nav = (page: Page, name: string) =>
   page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name }).click();
 
+/** Open a Settings page by its card title, e.g. "Household". */
+async function openSettings(page: Page, title: string) {
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('link', { name: new RegExp(`^${title}`) }).click();
+}
+
 async function openDashboard(page: Page) {
   await page.goto('./');
   await expect(page.getByTestId('limiting')).toBeVisible();
@@ -30,7 +36,7 @@ test('changing people and days updates shortfalls immediately (criterion 2)', as
   await openDashboard(page);
   await expect(page.getByTestId('bar-water_l')).toContainText('short 42 L'); // (3 × 4 + 2) × 3
 
-  await nav(page, 'Settings');
+  await openSettings(page, 'Household');
   await page.getByRole('button', { name: 'Increase People' }).click();
   await page.getByRole('button', { name: 'Increase People' }).click();
   await expect(page.getByRole('group', { name: 'People' })).toContainText('5');
@@ -38,24 +44,24 @@ test('changing people and days updates shortfalls immediately (criterion 2)', as
   await expect(page.getByTestId('bar-water_l')).toContainText('short 66 L'); // (5 × 4 + 2) × 3
   await expect(page.getByTestId('scenario')).toContainText('5 people');
 
-  await nav(page, 'Settings');
+  await openSettings(page, 'Your store');
   await page.getByRole('group', { name: 'Quick target' }).getByRole('button', { name: '5 days' }).click();
   await nav(page, 'Dashboard');
   await expect(page.getByTestId('bar-water_l')).toContainText('short 110 L'); // 22 × 5
   await expect(page.getByRole('img', { name: /of 5 days/ })).toBeVisible();
 });
 
-test('turning "Consider expiry dates" OFF raises food days (criterion 3)', async ({ page }) => {
+test('counting food past its best-before raises food days (criterion 3)', async ({ page }) => {
   await openDashboard(page);
   const food = page.getByTestId('bar-kcal');
   const daysOf = async () => Number((await food.locator('.value strong').textContent())!.trim());
   const before = await daysOf();
 
-  await nav(page, 'Settings');
-  await page.getByText('Consider expiry dates').click();
-  await expect(page.getByRole('switch', { name: /Consider expiry dates/ })).not.toBeChecked();
+  await openSettings(page, 'Your store');
+  await page.getByText('Still counted', { exact: true }).click();
+  await expect(page.getByRole('radio', { name: 'Still counted' })).toBeChecked();
   await nav(page, 'Dashboard');
-  await expect(page.getByTestId('scenario')).toContainText('expiry dates OFF');
+  await expect(page.getByTestId('scenario')).toContainText('past-date food counted');
   await expect.poll(daysOf).toBeGreaterThan(before);
 });
 
@@ -126,7 +132,7 @@ test('JSON export re-imports to an identical dashboard', async ({ page }) => {
     });
   const original = await snapshot();
 
-  await nav(page, 'Settings');
+  await openSettings(page, 'Backup and data');
   const downloading = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export backup (JSON)' }).click();
   const download = await downloading;
@@ -136,6 +142,7 @@ test('JSON export re-imports to an identical dashboard', async ({ page }) => {
   expect(backup.app).toBe('prepapp');
 
   // Change things after the backup...
+  await openSettings(page, 'Household');
   await page.getByRole('button', { name: 'Increase People' }).click();
   await nav(page, 'Inventory');
   await page.getByRole('button', { name: 'Use one Hot Chocolate' }).click();
@@ -143,7 +150,7 @@ test('JSON export re-imports to an identical dashboard', async ({ page }) => {
   expect(await snapshot()).not.toEqual(original);
 
   // ...then restore it.
-  await nav(page, 'Settings');
+  await openSettings(page, 'Backup and data');
   await page.getByTestId('import-file').setInputFiles(path!);
   await expect(page.getByRole('status').filter({ hasText: 'Restored the backup' })).toBeVisible();
   await nav(page, 'Dashboard');

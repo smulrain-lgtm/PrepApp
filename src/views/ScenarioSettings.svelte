@@ -1,10 +1,34 @@
 <script lang="ts">
   import Stepper from '../components/Stepper.svelte';
   import Toggle from '../components/Toggle.svelte';
-  import type { DailyNeeds, Pet } from '../lib/model/types';
+  import { GOAL_PRESETS } from '../lib/model/constants';
+  import type { DailyNeeds, PastDateRule, Pet } from '../lib/model/types';
+  import { pastDateRule } from '../lib/readiness';
   import { store } from '../lib/store.svelte';
 
+  /** store: target, goal and what counts. household: people, pets, daily needs. */
+  let { part }: { part: 'store' | 'household' } = $props();
+
   const s = $derived(store.snapshot!.settings);
+  const rule = $derived(pastDateRule(s));
+
+  const RULES: { value: PastDateRule; label: string; hint: string }[] = [
+    { value: 'exclude', label: 'Not counted', hint: 'Food stops counting on its best-before date.' },
+    {
+      value: 'taper',
+      label: 'Taper over a year',
+      hint: 'Counted in full for 6 months past the date, then less and less until nothing at 12 months. A best-before on tins and dried food is about quality, not safety.',
+    },
+    {
+      value: 'include',
+      label: 'Still counted',
+      hint: 'Dates are shown for rotation but do not change the figure.',
+    },
+  ];
+
+  function setRule(value: PastDateRule) {
+    void store.updateSettings({ pastDateRule: value, considerExpiry: value !== 'include' });
+  }
 
   function savePets(pets: Pet[]) {
     void store.updateSettings({ pets });
@@ -42,176 +66,270 @@
   }
 </script>
 
-<section aria-labelledby="scenario-heading">
-  <h2 id="scenario-heading">Scenario</h2>
-  <div class="card stack">
-    <div class="row">
-      <span class="label">People</span>
-      <Stepper
-        label="People"
-        value={s.people}
-        min={1}
-        max={10}
-        onchange={(v) => store.updateSettings({ people: v })}
-      />
-    </div>
-    <div class="row">
-      <span class="label">Target days</span>
-      <Stepper
-        label="Target days"
-        value={s.targetDays}
-        min={1}
-        max={14}
-        onchange={(v) => store.updateSettings({ targetDays: v })}
-      />
-    </div>
-    <div class="quick" role="group" aria-label="Quick target">
-      {#each [3, 5, 7] as d (d)}
-        <button class:selected={s.targetDays === d} onclick={() => store.updateSettings({ targetDays: d })}>
-          {d} days
-        </button>
-      {/each}
-    </div>
-  </div>
-</section>
-
-<section aria-labelledby="pets-heading">
-  <h2 id="pets-heading">Pets</h2>
-  <div class="card stack">
-    {#each s.pets as pet, i (pet.id)}
-      <div class="pet">
-        <label class="wide">
-          <span>Name</span>
-          <input
-            value={pet.name}
-            onchange={(e) => updatePet(i, { name: e.currentTarget.value.trim() || pet.name })}
-          />
-        </label>
-        <label>
-          <span>Type</span>
-          <select
-            value={pet.kind}
-            onchange={(e) => updatePet(i, { kind: e.currentTarget.value as Pet['kind'] })}
-          >
-            <option value="dog">Dog</option>
-            <option value="cat">Cat</option>
-            <option value="other">Other</option>
-          </select>
-        </label>
-        <label>
-          <span>Dry food g/day</span>
-          <input
-            type="number"
-            inputmode="numeric"
-            min="0"
-            value={pet.foodGPerDay}
-            onchange={(e) => updatePet(i, { foodGPerDay: num(e.currentTarget.value, pet.foodGPerDay) })}
-          />
-        </label>
-        <label>
-          <span>Water L/day</span>
-          <input
-            type="number"
-            inputmode="decimal"
-            min="0"
-            step="0.1"
-            value={pet.waterLPerDay}
-            onchange={(e) => updatePet(i, { waterLPerDay: num(e.currentTarget.value, pet.waterLPerDay) })}
-          />
-        </label>
-        <button class="remove" aria-label="Remove {pet.name}" onclick={() => removePet(i)}>Remove</button>
+{#if part === 'household'}
+  <section aria-labelledby="people-heading">
+    <h2 id="people-heading">People</h2>
+    <div class="card stack">
+      <div class="row">
+        <span class="label">People</span>
+        <Stepper
+          label="People"
+          value={s.people}
+          min={1}
+          max={10}
+          onchange={(v) => store.updateSettings({ people: v })}
+        />
       </div>
-    {:else}
-      <p class="muted">No pets.</p>
-    {/each}
-    <button onclick={addPet}>Add a pet</button>
-  </div>
-</section>
-
-<section aria-labelledby="counting-heading">
-  <h2 id="counting-heading">What counts</h2>
-  <div class="card stack">
-    <Toggle
-      label="Consider expiry dates"
-      description="OFF: expired stock still counts and expiry badges are only for information. Some ration packs are safe well past their date."
-      checked={s.considerExpiry}
-      onchange={(v) => store.updateSettings({ considerExpiry: v })}
-    />
-    <Toggle
-      label="Treat “use soon” as at risk"
-      description="ON: stock inside the warning window is left out of the readiness figure."
-      checked={s.useSoonAtRisk}
-      onchange={(v) => store.updateSettings({ useSoonAtRisk: v })}
-    />
-    <Toggle
-      label="Count indoor stock only"
-      description="Models losing access to the garage. Grab bags count as indoors."
-      checked={s.indoorOnly}
-      onchange={(v) => store.updateSettings({ indoorOnly: v })}
-    />
-    <Toggle
-      label="Freezing conditions"
-      description="Water and plain-butane gas stored outdoors stop counting."
-      checked={s.freezing}
-      onchange={(v) => store.updateSettings({ freezing: v })}
-    />
-    <div class="row">
-      <span class="label">Warning window</span>
-      <Stepper
-        label="Warning window in months"
-        value={s.warningMonths}
-        min={1}
-        max={24}
-        unit="mo"
-        onchange={(v) => store.updateSettings({ warningMonths: v })}
-      />
     </div>
-  </div>
-</section>
+  </section>
+{:else}
+  <section aria-labelledby="target-heading">
+    <h2 id="target-heading">Target and goal</h2>
+    <div class="card stack">
+      <div class="row">
+        <span class="label">Target days <span class="muted hint">(the minimum, e.g. Be Ready's 3)</span></span
+        >
+        <Stepper
+          label="Target days"
+          value={s.targetDays}
+          min={1}
+          max={14}
+          onchange={(v) => store.updateSettings({ targetDays: v })}
+        />
+      </div>
+      <div class="quick" role="group" aria-label="Quick target">
+        {#each [3, 5, 7] as d (d)}
+          <button class:selected={s.targetDays === d} onclick={() => store.updateSettings({ targetDays: d })}>
+            {d} days
+          </button>
+        {/each}
+      </div>
+      <span class="label">Long-term goal</span>
+      <div class="quick goal" role="group" aria-label="Long-term goal">
+        {#each GOAL_PRESETS as d (d)}
+          <button
+            class:selected={(s.goalDays ?? 14) === d}
+            onclick={() => store.updateSettings({ goalDays: d })}
+          >
+            {d} days
+          </button>
+        {/each}
+      </div>
+      <p class="muted small">
+        The dashboard's ruler runs to the goal. The target sets the shortfalls and the colour.
+      </p>
+    </div>
+  </section>
+{/if}
 
-<section aria-labelledby="needs-heading">
-  <h2 id="needs-heading">Daily needs per person</h2>
-  <div class="card needs">
-    <label>
-      <span>Water (L)</span>
-      <input
-        type="number"
-        inputmode="decimal"
-        min="0"
-        step="0.5"
-        value={s.dailyNeeds.waterLPerPerson}
-        onchange={(e) =>
-          updateNeeds({ waterLPerPerson: num(e.currentTarget.value, s.dailyNeeds.waterLPerPerson) })}
+{#if part === 'household'}
+  <section aria-labelledby="pets-heading">
+    <h2 id="pets-heading">Pets</h2>
+    <div class="card stack">
+      {#each s.pets as pet, i (pet.id)}
+        <div class="pet">
+          <label class="wide">
+            <span>Name</span>
+            <input
+              value={pet.name}
+              onchange={(e) => updatePet(i, { name: e.currentTarget.value.trim() || pet.name })}
+            />
+          </label>
+          <label>
+            <span>Type</span>
+            <select
+              value={pet.kind}
+              onchange={(e) => updatePet(i, { kind: e.currentTarget.value as Pet['kind'] })}
+            >
+              <option value="dog">Dog</option>
+              <option value="cat">Cat</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>
+            <span>Dry food g/day</span>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              value={pet.foodGPerDay}
+              onchange={(e) => updatePet(i, { foodGPerDay: num(e.currentTarget.value, pet.foodGPerDay) })}
+            />
+          </label>
+          <label>
+            <span>Water L/day</span>
+            <input
+              type="number"
+              inputmode="decimal"
+              min="0"
+              step="0.1"
+              value={pet.waterLPerDay}
+              onchange={(e) => updatePet(i, { waterLPerDay: num(e.currentTarget.value, pet.waterLPerDay) })}
+            />
+          </label>
+          <button class="remove" aria-label="Remove {pet.name}" onclick={() => removePet(i)}>Remove</button>
+        </div>
+      {:else}
+        <p class="muted">No pets.</p>
+      {/each}
+      <button onclick={addPet}>Add a pet</button>
+    </div>
+  </section>
+{:else}
+  <section aria-labelledby="counting-heading">
+    <h2 id="counting-heading">What counts</h2>
+    <div class="card stack">
+      <fieldset>
+        <legend class="label">Food past its best-before</legend>
+        <div class="segmented">
+          {#each RULES as r (r.value)}
+            <label class:selected={rule === r.value}>
+              <input
+                type="radio"
+                name="past-date"
+                value={r.value}
+                checked={rule === r.value}
+                onchange={() => setRule(r.value)}
+              />
+              {r.label}
+            </label>
+          {/each}
+        </div>
+        <p class="muted small">{RULES.find((x) => x.value === rule)?.hint}</p>
+      </fieldset>
+      <Toggle
+        label="Treat “use soon” as at risk"
+        description="ON: stock inside the warning window is left out of the readiness figure."
+        checked={s.useSoonAtRisk}
+        onchange={(v) => store.updateSettings({ useSoonAtRisk: v })}
       />
-    </label>
-    <label>
-      <span>Calories (kcal)</span>
-      <input
-        type="number"
-        inputmode="numeric"
-        min="0"
-        step="100"
-        value={s.dailyNeeds.kcalPerPerson}
-        onchange={(e) =>
-          updateNeeds({ kcalPerPerson: num(e.currentTarget.value, s.dailyNeeds.kcalPerPerson) })}
+      <Toggle
+        label="Count indoor stock only"
+        description="Models losing access to the garage. Grab bags count as indoors."
+        checked={s.indoorOnly}
+        onchange={(v) => store.updateSettings({ indoorOnly: v })}
       />
-    </label>
-    <label>
-      <span>Cooking gas (g)</span>
-      <input
-        type="number"
-        inputmode="numeric"
-        min="0"
-        value={s.dailyNeeds.gasGPerPerson}
-        onchange={(e) =>
-          updateNeeds({ gasGPerPerson: num(e.currentTarget.value, s.dailyNeeds.gasGPerPerson) })}
+      <Toggle
+        label="Freezing conditions"
+        description="Water and plain-butane gas stored outdoors stop counting."
+        checked={s.freezing}
+        onchange={(v) => store.updateSettings({ freezing: v })}
       />
-    </label>
-  </div>
-  <p class="muted small">77 g of gas per person is one 230 g canister a day for three people.</p>
-</section>
+      <div class="row">
+        <span class="label">Warning window</span>
+        <Stepper
+          label="Warning window in months"
+          value={s.warningMonths}
+          min={1}
+          max={24}
+          unit="mo"
+          onchange={(v) => store.updateSettings({ warningMonths: v })}
+        />
+      </div>
+    </div>
+  </section>
+{/if}
+
+{#if part === 'household'}
+  <section aria-labelledby="needs-heading">
+    <h2 id="needs-heading">Daily needs per person</h2>
+    <div class="card needs">
+      <label>
+        <span>Water (L)</span>
+        <input
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.5"
+          value={s.dailyNeeds.waterLPerPerson}
+          onchange={(e) =>
+            updateNeeds({ waterLPerPerson: num(e.currentTarget.value, s.dailyNeeds.waterLPerPerson) })}
+        />
+      </label>
+      <label>
+        <span>Calories (kcal)</span>
+        <input
+          type="number"
+          inputmode="numeric"
+          min="0"
+          step="100"
+          value={s.dailyNeeds.kcalPerPerson}
+          onchange={(e) =>
+            updateNeeds({ kcalPerPerson: num(e.currentTarget.value, s.dailyNeeds.kcalPerPerson) })}
+        />
+      </label>
+      <label>
+        <span>Cooking gas (g)</span>
+        <input
+          type="number"
+          inputmode="numeric"
+          min="0"
+          value={s.dailyNeeds.gasGPerPerson}
+          onchange={(e) =>
+            updateNeeds({ gasGPerPerson: num(e.currentTarget.value, s.dailyNeeds.gasGPerPerson) })}
+        />
+      </label>
+    </div>
+    <p class="muted small">77 g of gas per person is one 230 g canister a day for three people.</p>
+  </section>
+{/if}
 
 <style>
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .hint {
+    font-weight: 400;
+    font-size: 0.85rem;
+  }
+
+  .goal {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .segmented {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .segmented label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 44px;
+    padding: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+  }
+
+  .segmented label:last-child {
+    border-right: 0;
+  }
+
+  .segmented .selected {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  .segmented input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .stack {
     display: grid;
     gap: 0.75rem;

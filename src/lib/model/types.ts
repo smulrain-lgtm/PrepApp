@@ -91,7 +91,19 @@ export interface Settings extends BaseDoc {
   dailyNeeds: DailyNeeds;
   /** Metrics whose days decide the readiness figure. */
   criticalMetrics: Metric[];
+  /** Long-term goal in days, shown as a ruler on the dashboard (target stays the minimum). */
+  goalDays?: number;
+  /**
+   * Food past its best-before. exclude: not counted. taper: counted in full for
+   * 6 months past the date, then less and less until nothing at 12 months.
+   * include: still counted. Older records only have `considerExpiry`.
+   */
+  pastDateRule?: PastDateRule;
+  /** Scenarios only (never saved): count stock kept in this one place, e.g. the grab bags. */
+  onlyLocation?: LocationId;
 }
+
+export type PastDateRule = 'exclude' | 'taper' | 'include';
 
 export interface Category extends BaseDoc {
   type: 'category';

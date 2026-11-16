@@ -5,6 +5,12 @@ import { readFileSync } from 'node:fs';
 const nav = (page: Page, name: string) =>
   page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name }).click();
 
+/** Open a Settings page by its card title, e.g. "Household". */
+async function openSettings(page: Page, title: string) {
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('link', { name: new RegExp(`^${title}`) }).click();
+}
+
 test.beforeEach(async ({ page }) => {
   page.on('dialog', (dialog) => dialog.accept());
   await page.goto('./');
@@ -16,7 +22,7 @@ test('shopping list gathers shortfalls, purchases and needs, and can be shared',
   context,
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await expect(page.getByTestId('shopping-card')).toContainText('81 things to buy');
+  await expect(page.getByTestId('shopping-card')).toContainText('80 things to buy');
   await page.getByTestId('shopping-card').click();
   await expect(page.getByRole('heading', { name: 'Shopping list' })).toBeVisible();
   await expect(page.getByText('42 L more')).toBeVisible();
@@ -56,7 +62,7 @@ test('due checks can be ticked off from the dashboard', async ({ page }) => {
 });
 
 test('inventory CSV export', async ({ page }) => {
-  await nav(page, 'Settings');
+  await openSettings(page, 'Backup and data');
   const downloading = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export inventory (CSV)' }).click();
   const download = await downloading;
@@ -91,6 +97,11 @@ for (const colorScheme of ['light', 'dark'] as const) {
       './#/info?s=contacts',
       './#/info?s=guides',
       './#/settings',
+      './#/settings?s=store',
+      './#/settings?s=household',
+      './#/settings?s=sync',
+      './#/settings?s=data',
+      './#/method',
       './#/shopping',
       './#/rotation',
     ];
@@ -105,3 +116,30 @@ for (const colorScheme of ['light', 'dark'] as const) {
     }
   });
 }
+
+test('release 1.1: scenarios, goal and medicine essentials on the dashboard', async ({ page }) => {
+  await expect(page.getByTestId('tile-medicine')).toContainText('0 of 4');
+  await expect(page.getByText('14 days to your 14-day goal')).toBeVisible();
+
+  // Power cut adds lighting.
+  await expect(page.getByTestId('bar-light_days')).toHaveCount(0);
+  await page.getByRole('group', { name: 'Scenario' }).getByRole('button', { name: 'Power cut' }).click();
+  await expect(page.getByTestId('bar-light_days')).toBeVisible();
+
+  // Go bag: nothing in the grab bags yet, judged against 3 days, no cooking fuel.
+  await page.getByRole('group', { name: 'Scenario' }).getByRole('button', { name: 'Go bag' }).click();
+  await expect(page.getByRole('heading', { name: /Your go bag lasts/ })).toBeVisible();
+  await expect(page.getByTestId('bar-fuel_g')).toHaveCount(0);
+  await expect(page.getByTestId('bar-kcal')).toContainText('Have 0 kcal');
+
+  // The choice is remembered on this device.
+  await page.reload();
+  await expect(page.getByRole('heading', { name: /Your go bag lasts/ })).toBeVisible();
+});
+
+test('release 1.1: the long-term goal sets the ruler', async ({ page }) => {
+  await page.goto('./#/settings?s=store');
+  await page.getByRole('group', { name: 'Long-term goal' }).getByRole('button', { name: '30 days' }).click();
+  await page.goto('./#/dashboard');
+  await expect(page.getByText('30 days to your 30-day goal')).toBeVisible();
+});

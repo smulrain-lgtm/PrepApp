@@ -20,13 +20,12 @@ describe('shopping list', () => {
       'Food calories',
       'Pet food',
       'Cooking fuel',
-      'Medicines',
     ]);
     expect(list.shortfalls[0].amount).toBe('42 L');
     expect(list.need).toHaveLength(52);
     expect(list.check).toHaveLength(6); // gas, dry fuel, paraffin, first aid, prescriptions, warm layers
     expect(list.toBuy).toHaveLength(24);
-    expect(shoppingCount(list)).toBe(5 + 52 + 24);
+    expect(shoppingCount(list)).toBe(4 + 52 + 24);
   });
 
   it('writes plain text for the share sheet', () => {

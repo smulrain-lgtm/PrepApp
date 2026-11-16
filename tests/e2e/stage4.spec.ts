@@ -20,8 +20,13 @@ async function newDevice(
   return { context, page };
 }
 
-async function turnOnSync(page: Page, database: string) {
+async function openSync(page: Page) {
   await nav(page, 'Settings');
+  await page.getByRole('link', { name: /^Sync with the Pi/ }).click();
+}
+
+async function turnOnSync(page: Page, database: string) {
+  await openSync(page);
   await page.getByLabel('Sync addresses').fill(COUCH);
   await page.getByLabel('Database').fill(database);
   await page.getByRole('button', { name: 'Save' }).first().click();
@@ -98,7 +103,7 @@ test.describe('sync between two devices', () => {
 
   test('a wrong address shows Offline with a reason, not a crash', async ({ browser, baseURL }) => {
     const iphone = await newDevice(browser, baseURL!);
-    await nav(iphone.page, 'Settings');
+    await openSync(iphone.page);
     await iphone.page.getByLabel('Sync addresses').fill('http://localhost:9');
     await iphone.page.getByText('Sync this device').click();
     await expect(

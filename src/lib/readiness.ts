@@ -9,7 +9,16 @@
 import { addDays, addMonths } from './model/dates';
 import { isIndoor, METRIC_INFO } from './model/constants';
 import { fifoOrder } from './db/fifo';
-import type { Batch, ChecklistItem, IsoDate, Item, Metric, Movement, Settings } from './model/types';
+import type {
+  Batch,
+  ChecklistItem,
+  IsoDate,
+  Item,
+  Metric,
+  Movement,
+  PastDateRule,
+  Settings,
+} from './model/types';
 
 export type ExpiryStatus = 'expired' | 'use_soon' | 'ok' | 'no_date';
 
@@ -71,9 +80,33 @@ export function expiryStatus(
   return 'ok';
 }
 
-export type ExclusionReason = 'not_counted' | 'expired' | 'use_soon' | 'not_indoors' | 'freezing';
+export type ExclusionReason =
+  'not_counted' | 'expired' | 'use_soon' | 'not_indoors' | 'freezing' | 'not_in_kit';
 
-/** Why a batch does not count towards readiness, or null when it does. */
+/** The past-best-before rule, for records saved before the rule existed. */
+export function pastDateRule(settings: Settings): PastDateRule {
+  return settings.pastDateRule ?? (settings.considerExpiry ? 'exclude' : 'include');
+}
+
+/**
+ * How much of a batch counts, by its date: 1 = all of it, 0 = none.
+ * With the taper rule, food counts in full until 6 months past its
+ * best-before, then less and less until nothing at 12 months. A best-before
+ * on tins, dried goods and bottled water is about quality, not safety; this is
+ * a planning assumption, not advice about what is safe to eat.
+ */
+export function dateFactor(bestBefore: IsoDate | null, today: IsoDate, rule: PastDateRule): number {
+  if (!bestBefore || bestBefore >= today || rule === 'include') return 1;
+  if (rule === 'exclude') return 0;
+  const sixMonthsAgo = addMonths(today, -6);
+  const yearAgo = addMonths(today, -12);
+  if (bestBefore >= sixMonthsAgo) return 1;
+  if (bestBefore <= yearAgo) return 0;
+  const day = (d: IsoDate) => Date.parse(`${d}T00:00:00Z`) / 864e5;
+  return (day(bestBefore) - day(yearAgo)) / (day(sixMonthsAgo) - day(yearAgo));
+}
+
+/** Why a batch does not count towards readiness, or null when it does (perhaps only in part). */
 export function exclusionReason(
   item: Item,
   batch: Batch,
@@ -81,8 +114,9 @@ export function exclusionReason(
   today: IsoDate,
 ): ExclusionReason | null {
   if (!item.countsTowardReadiness || item.perUnit.metric === 'none') return 'not_counted';
+  if (settings.onlyLocation && item.location !== settings.onlyLocation) return 'not_in_kit';
+  if (dateFactor(batch.bestBefore, today, pastDateRule(settings)) === 0) return 'expired';
   const status = expiryStatus(batch.bestBefore, today, settings.warningMonths);
-  if (settings.considerExpiry && status === 'expired') return 'expired';
   if (settings.useSoonAtRisk && status === 'use_soon') return 'use_soon';
   const indoor = isIndoor(item.location);
   if (settings.indoorOnly && !indoor) return 'not_indoors';
@@ -141,6 +175,8 @@ export interface ReadinessResult {
   /** The critical metric that runs out first (ties: display order, Water first). */
   limiting: Exclude<Metric, 'none'> | null;
   targetDays: number;
+  /** Long-term goal in days (at least the target). */
+  goalDays: number;
   expiry: ExpiryCounts;
 }
 
@@ -184,7 +220,8 @@ export function computeReadiness(input: ReadinessInput, today: IsoDate): Readine
 
     if (exclusionReason(item, batch, settings, today) !== null) continue;
     const { metric, amount } = item.perUnit;
-    stock.set(metric, (stock.get(metric) ?? 0) + units * amount);
+    const factor = dateFactor(batch.bestBefore, today, pastDateRule(settings));
+    stock.set(metric, (stock.get(metric) ?? 0) + units * amount * factor);
   }
 
   const metrics: MetricResult[] = METRIC_INFO.map(({ id, label, unit }) => {
@@ -199,7 +236,8 @@ export function computeReadiness(input: ReadinessInput, today: IsoDate): Readine
       dailyDemand: need,
       days: need > 0 ? have / need : null,
       shortfall: Math.max(0, settings.targetDays * need - have),
-      critical: settings.criticalMetrics.includes(metric),
+      // Medicines are judged as essentials covered (see medicineEssentials), not days.
+      critical: metric !== 'med_days' && settings.criticalMetrics.includes(metric),
     };
   });
 
@@ -220,6 +258,7 @@ export function computeReadiness(input: ReadinessInput, today: IsoDate): Readine
     band: band(readinessFraction),
     limiting: limiting?.metric ?? null,
     targetDays: settings.targetDays,
+    goalDays: Math.max(settings.goalDays ?? 14, settings.targetDays),
     expiry,
   };
 }
@@ -269,4 +308,21 @@ export function summariseChecklist(
       l.checkIntervalDays != null && (!l.lastChecked || addDays(l.lastChecked, l.checkIntervalDays) <= today),
   );
   return { total: live.length, have: live.filter((l) => l.status === 'have').length, gaps, dueChecks };
+}
+
+export interface EssentialsResult {
+  covered: number;
+  total: number;
+  /** Names of the essentials not yet marked Have. */
+  missing: string[];
+}
+
+/** Medicine essentials covered: the named checklist lines marked Have. */
+export function medicineEssentials(lines: ChecklistItem[], names: string[]): EssentialsResult {
+  const live = lines.filter((l) => !l.deleted);
+  const present = names
+    .map((name) => live.find((l) => l.name === name))
+    .filter((l): l is ChecklistItem => !!l);
+  const missing = present.filter((l) => l.status !== 'have').map((l) => l.name);
+  return { covered: present.length - missing.length, total: present.length, missing };
 }

@@ -9,10 +9,11 @@
   import Rotation from './views/Rotation.svelte';
   import Settings from './views/Settings.svelte';
   import Shopping from './views/Shopping.svelte';
+  import Method from './views/Method.svelte';
   import SyncBadge from './components/SyncBadge.svelte';
 
   /** Screens opened from the dashboard; the Dashboard tab stays highlighted. */
-  type Page = TabId | 'shopping' | 'rotation';
+  type Page = TabId | 'shopping' | 'rotation' | 'method';
 
   interface Route {
     page: Page;
@@ -22,7 +23,8 @@
   /** #/inventory?status=expired → { page: 'inventory', params: status=expired } */
   function parseHash(): Route {
     const [path, query = ''] = location.hash.replace(/^#\/?/, '').split('?');
-    const page: Page = isTabId(path) || path === 'shopping' || path === 'rotation' ? path : 'dashboard';
+    const page: Page =
+      isTabId(path) || path === 'shopping' || path === 'rotation' || path === 'method' ? path : 'dashboard';
     return { page, params: new URLSearchParams(query) };
   }
 
@@ -30,7 +32,9 @@
   let online = $state(navigator.onLine);
 
   const active = $derived<TabId>(
-    route.page === 'shopping' || route.page === 'rotation' ? 'dashboard' : route.page,
+    route.page === 'shopping' || route.page === 'rotation' || route.page === 'method'
+      ? 'dashboard'
+      : route.page,
   );
 
   function select(id: TabId) {
@@ -96,6 +100,8 @@
       <Shopping />
     {:else if route.page === 'rotation'}
       <Rotation />
+    {:else if route.page === 'method'}
+      <Method />
     {:else if active === 'dashboard'}
       <Dashboard />
     {:else if active === 'inventory'}
@@ -105,7 +111,7 @@
     {:else if active === 'info'}
       <Info params={route.params} />
     {:else}
-      <Settings />
+      <Settings params={route.params} />
     {/if}
 
     {#if store.notice}
