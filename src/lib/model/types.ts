@@ -55,7 +55,8 @@ export type DocType =
   | 'checklistItem'
   | 'contact'
   | 'infoNote'
-  | 'purchase';
+  | 'purchase'
+  | 'list';
 
 export interface Pet {
   id: string;
@@ -66,6 +67,27 @@ export interface Pet {
   /** Drinking water per day, litres. */
   waterLPerDay: number;
 }
+
+/** A medicine someone depends on, optionally matched to an inventory item. */
+export interface Medication {
+  id: string;
+  name: string;
+  /** Units taken a day (tablets, doses); gives days of cover from the stock. */
+  dosePerDay?: number | null;
+  /** The inventory item that holds this medicine. */
+  itemId?: string | null;
+}
+
+/** A named member of the household. */
+export interface Person {
+  id: string;
+  name: string;
+  age?: number | null;
+  medications: Medication[];
+}
+
+/** Meal types counted on the Checklist's Food box. */
+export type MealType = 'breakfast' | 'main' | 'side' | 'dessert' | 'snack';
 
 export interface DailyNeeds {
   waterLPerPerson: number;
@@ -99,6 +121,10 @@ export interface Settings extends BaseDoc {
    * include: still counted. Older records only have `considerExpiry`.
    */
   pastDateRule?: PastDateRule;
+  /** Named people (optional). `people` is never fewer than these. */
+  members?: Person[];
+  /** Meals of each type per person per day, for the Food box targets. Unset types use the defaults. */
+  mealsPerDay?: Partial<Record<MealType, number>>;
   /** Scenarios only (never saved): count stock kept in this one place, e.g. the grab bags. */
   onlyLocation?: LocationId;
 }
@@ -117,6 +143,8 @@ export interface Category extends BaseDoc {
    * edited: the defaults in DEFAULT_SUBCATEGORIES apply (see lib/categories.ts).
    */
   subCategories?: string[];
+  /** Names offered for "One unit is a…" (pack, tin, bottle…). Unset: the defaults. */
+  units?: string[];
 }
 
 export interface PerUnit {
@@ -213,6 +241,11 @@ export interface ChecklistItem extends BaseDoc {
   notes?: string;
   lastChecked?: IsoDate | null;
   checkIntervalDays?: number | null;
+  /**
+   * Inventory items that supply this line. When set, the line's status follows
+   * their stock: Have at the target, Check when some, Need when none.
+   */
+  itemIds?: string[];
 }
 
 export interface Contact extends BaseDoc {
@@ -241,8 +274,22 @@ export interface InfoNote extends BaseDoc {
 
 export type PurchaseStatus = 'to_buy' | 'bought';
 
+export type ListKind = 'shopping' | 'recent' | 'custom';
+
+/** A list of things to buy or do: the shopping list, recently used, or the household's own. */
+export interface ListDoc extends BaseDoc {
+  type: 'list';
+  name: string;
+  order: number;
+  kind: ListKind;
+}
+
 export interface Purchase extends BaseDoc {
   type: 'purchase';
+  /** The list it is on. Unset: the shopping list (records from before 1.3). */
+  listId?: string;
+  /** The inventory item it restocks, if known. */
+  itemId?: string;
   name: string;
   category: string;
   quantity: string;
@@ -263,7 +310,8 @@ export type AnyDoc =
   | ChecklistItem
   | Contact
   | InfoNote
-  | Purchase;
+  | Purchase
+  | ListDoc;
 
 /** Everything the screens and the readiness engine need, loaded at once. */
 export interface Snapshot {
@@ -277,4 +325,5 @@ export interface Snapshot {
   contacts: Contact[];
   infoNotes: InfoNote[];
   purchases: Purchase[];
+  lists: ListDoc[];
 }

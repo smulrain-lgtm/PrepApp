@@ -1,5 +1,7 @@
 <script lang="ts">
+  import CollapseButton from '../components/CollapseButton.svelte';
   import StatusBadge from '../components/StatusBadge.svelte';
+  import { Collapsed } from '../lib/collapse.svelte';
   import ItemSheet, { type ItemPreset } from './ItemSheet.svelte';
   import ScanSheet from './ScanSheet.svelte';
   import type { LookupResult } from '../lib/barcode';
@@ -113,6 +115,11 @@
   );
   const shown = $derived(groups.reduce((s, g) => s + g.rows.length, 0));
 
+  // Show / hide each category. While a filter is on, every match is shown.
+  const collapsed = new Collapsed('inventory');
+  const groupIds = $derived(groups.map((g) => g.category?._id ?? 'other'));
+  const isOpen = (id: string) => filtered || collapsed.isOpen(id);
+
   let sheetItemId = $state<string | null>(null);
   let sheetOpen = $state(false);
 
@@ -150,7 +157,6 @@
       </svg>
       Scan
     </button>
-    <a class="rotation" href="#/rotation">Rotation</a>
   </div>
 </div>
 
@@ -201,23 +207,40 @@
       Showing {shown} of {rows.length} items.
       <button class="link" onclick={() => (filter = { ...EMPTY_FILTER })}>Clear filters</button>
     </p>
+  {:else}
+    <p class="muted count">
+      <button class="link" onclick={() => collapsed.setAll(groupIds, collapsed.allClosed(groupIds))}>
+        {collapsed.allClosed(groupIds) ? 'Show all categories' : 'Hide all categories'}
+      </button>
+    </p>
   {/if}
 </div>
 
 {#each groups as group (group.category?._id ?? 'other')}
-  <section aria-labelledby="cat-{group.category?._id ?? 'other'}">
+  {@const gid = group.category?._id ?? 'other'}
+  {@const name = group.category?.name ?? 'Other'}
+  <section aria-labelledby="cat-{gid}">
     <div class="cat-head">
-      <h2 id="cat-{group.category?._id ?? 'other'}">{group.category?.name ?? 'Other'}</h2>
+      {#if !filtered}
+        <CollapseButton
+          open={isOpen(gid)}
+          label={name}
+          controls="items-{gid}"
+          onclick={() => collapsed.toggle(gid)}
+        />
+      {/if}
+      <h2 id="cat-{gid}">{name}</h2>
+      <span class="muted n">{group.rows.length}</span>
       <button
         class="add"
         aria-label="Add item to {group.category?.name ?? 'Other'}"
         onclick={() => addTo(group.category?._id ?? '')}>+ Add</button
       >
     </div>
-    {#if !group.rows.length}
-      <p class="card muted empty">No items yet.</p>
+    {#if !isOpen(gid)}{:else if !group.rows.length}
+      <p class="card muted empty" id="items-{gid}">No items yet.</p>
     {:else}
-      <ul class="list card">
+      <ul class="list card" id="items-{gid}">
         {#each group.rows as row (row.item._id)}
           <li data-testid="item-{row.item._id}">
             <button class="row-main" onclick={() => openItem(row.item._id)}>
@@ -269,8 +292,22 @@
     gap: 1rem;
   }
 
+  .cat-head .n {
+    flex: 1;
+    margin-top: 0.75rem;
+  }
+
   .cat-head h2 {
     margin: 1.25rem 0 0.5rem;
+  }
+
+  .cat-head .n {
+    font-weight: 400;
+    font-size: 0.9rem;
+  }
+
+  .cat-head :global(.collapse) {
+    margin: 0.75rem -0.5rem 0 -0.75rem;
   }
 
   .add {
@@ -283,15 +320,6 @@
   .empty {
     margin: 0;
     font-size: 0.9rem;
-  }
-
-  .rotation {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    color: var(--accent);
-    font-weight: 600;
-    text-decoration: none;
   }
 
   .title-row {

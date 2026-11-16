@@ -15,7 +15,9 @@ import {
 } from './device-settings';
 import { readConflictLog, resolveConflicts, type ConflictRecord } from './sync/conflicts';
 import { SyncManager, syncState } from './sync/sync.svelte';
-import { ADDED_CATEGORIES } from './model/constants';
+import { ADDED_DOCS } from './model/constants';
+import { withPower } from './scenario';
+import { resolveChecklist } from './stock-links';
 import { todayIso } from './model/dates';
 import type { AnyDoc, Settings, Snapshot } from './model/types';
 import { computeReadiness, summariseChecklist } from './readiness';
@@ -33,10 +35,16 @@ class AppStore {
   /** Conflicts resolved on this device, newest first. */
   conflictLog = $state.raw<ConflictRecord[]>([]);
 
-  readiness = $derived(this.snapshot ? computeReadiness(this.snapshot, this.today) : null);
-  checklist = $derived(
+  readiness = $derived(
     this.snapshot
-      ? summariseChecklist(this.snapshot.checklistItems, this.snapshot.settings, this.today)
+      ? computeReadiness({ ...this.snapshot, settings: withPower(this.snapshot.settings) }, this.today)
+      : null,
+  );
+  /** Checklist lines as shown: meal lines left out, linked lines' status from their stock. */
+  resolvedChecklist = $derived(this.snapshot ? resolveChecklist(this.snapshot) : null);
+  checklist = $derived(
+    this.snapshot && this.resolvedChecklist
+      ? summariseChecklist(this.resolvedChecklist.lines, this.snapshot.settings, this.today)
       : null,
   );
 
@@ -57,7 +65,7 @@ class AppStore {
     try {
       await this.open();
       await this.repo.seedIfEmpty(seed as AnyDoc[]);
-      await this.repo.ensureDocs(ADDED_CATEGORIES);
+      await this.repo.ensureDocs(ADDED_DOCS);
       await this.refresh();
       this.conflictLog = await readConflictLog(this.db!);
       this.ready = true;
@@ -135,8 +143,15 @@ class AppStore {
   }
 
   async refresh(): Promise<void> {
-    this.snapshot = await this.repo.loadSnapshot();
+    const snap = await this.repo.loadSnapshot();
+    // Settings changes still queued win over the copy just loaded, so a reload
+    // between two quick edits never shows (or builds on) the older settings.
+    this.snapshot = this.pendingSettings ? { ...snap, settings: this.pendingSettings } : snap;
   }
+
+  /** The newest settings while saves are queued; null when none are. */
+  private pendingSettings: Settings | null = null;
+  private pendingSaves = 0;
 
   private writeQueue: Promise<unknown> = Promise.resolve();
 
@@ -174,14 +189,24 @@ class AppStore {
   async updateSettings(patch: Partial<Settings>): Promise<void> {
     const snap = this.snapshot;
     if (!snap) return;
-    const next: Settings = { ...snap.settings, ...patch };
+    // Build on the newest settings, including edits whose saves are still queued.
+    const next: Settings = { ...(this.pendingSettings ?? snap.settings), ...patch };
+    this.pendingSettings = next;
+    this.pendingSaves++;
     this.snapshot = { ...snap, settings: next };
-    await this.run((repo) => {
-      // Without _rev, save() picks up the latest revision, so queued saves never clash.
-      const { _rev, ...doc } = next;
-      void _rev;
-      return repo.save(doc as Settings);
-    });
+    try {
+      await this.run((repo) => {
+        // Without _rev, save() picks up the latest revision, so queued saves never clash.
+        const { _rev, ...doc } = next;
+        void _rev;
+        return repo.save(doc as Settings);
+      });
+    } finally {
+      if (--this.pendingSaves === 0) {
+        this.pendingSettings = null;
+        await this.refresh();
+      }
+    }
   }
 
   setDeviceName(name: string): void {
@@ -220,7 +245,7 @@ class AppStore {
       await old?.destroy();
       await this.open();
       await this.repo.importDocs(docs);
-      await this.repo.ensureDocs(ADDED_CATEGORIES);
+      await this.repo.ensureDocs(ADDED_DOCS);
       await this.refresh();
       this.conflictLog = [];
       this.notify(done);

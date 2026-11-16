@@ -22,10 +22,26 @@
       document.body.classList.toggle('pane-open', asPane);
     }
     if (!open && dialog.open) {
+      closingByApp = true;
       dialog.close();
       document.body.classList.remove('pane-open');
     }
   });
+
+  /**
+   * Set while the app closes the dialog itself. The browser reports that close
+   * a moment later; by then the sheet may have been opened again (a quick tap
+   * on another row), so that report must not close it.
+   */
+  let closingByApp = false;
+
+  function onDialogClose() {
+    if (closingByApp) {
+      closingByApp = false;
+      return;
+    }
+    onclose(); // closed by the person (Escape)
+  }
 
   function onkeydown(event: KeyboardEvent) {
     // A non-modal pane does not close on Escape by itself.
@@ -33,7 +49,7 @@
   }
 </script>
 
-<dialog bind:this={dialog} class:pane={asPane} aria-label={title} {onclose} {onkeydown}>
+<dialog bind:this={dialog} class:pane={asPane} aria-label={title} onclose={onDialogClose} {onkeydown}>
   <header>
     <h2>{title}</h2>
     <button type="button" class="close" onclick={onclose}>Done</button>

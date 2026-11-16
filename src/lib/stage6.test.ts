@@ -20,7 +20,7 @@ import {
 } from './categories';
 import { Repository } from './db/repository';
 import { buildItemRows, EMPTY_FILTER, isFiltered, matchesFilter } from './inventory-view';
-import { ADDED_CATEGORIES, INGREDIENTS_CATEGORY } from './model/constants';
+import { INGREDIENTS_CATEGORY } from './model/constants';
 import { snapshotFromDocs } from './model/snapshot';
 import type { AnyDoc, Category, Item } from './model/types';
 import { caloriesFromLabel, cleanNutrition, formatPackSize, kcalPerUnit, parsePackSize } from './nutrition';
@@ -192,10 +192,10 @@ describe('categories', () => {
     const repo = new Repository(db, { deviceName: 'test' });
     const old = (seedJson as AnyDoc[]).filter((d) => d._id !== INGREDIENTS_CATEGORY._id);
     await repo.importDocs(old);
-    expect(await repo.ensureDocs(ADDED_CATEGORIES)).toBe(1);
-    expect(await repo.ensureDocs(ADDED_CATEGORIES)).toBe(0);
+    expect(await repo.ensureDocs([INGREDIENTS_CATEGORY])).toBe(1);
+    expect(await repo.ensureDocs([INGREDIENTS_CATEGORY])).toBe(0);
     await repo.softDelete(INGREDIENTS_CATEGORY._id);
-    expect(await repo.ensureDocs(ADDED_CATEGORIES)).toBe(0);
+    expect(await repo.ensureDocs([INGREDIENTS_CATEGORY])).toBe(0);
     await db.destroy();
   });
 

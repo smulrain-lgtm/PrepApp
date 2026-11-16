@@ -22,27 +22,32 @@ test('shopping list gathers shortfalls, purchases and needs, and can be shared',
   context,
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await expect(page.getByTestId('shopping-card')).toContainText('80 things to buy');
+  await expect(page.getByTestId('shopping-card')).toContainText('82 things to buy');
   await page.getByTestId('shopping-card').click();
-  await expect(page.getByRole('heading', { name: 'Shopping list' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Lists', level: 1 })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Shopping list/, pressed: true })).toBeVisible();
   await expect(page.getByText('42 L more')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Share list' }).click();
+  await page.getByRole('button', { name: 'Share', exact: true }).click();
   // No share sheet in a desktop browser: the list is copied instead.
   await expect(page.getByRole('status').filter({ hasText: 'Shopping list copied.' })).toBeVisible();
   const text = await page.evaluate(() => navigator.clipboard.readText());
   expect(text).toContain('- Water: 42 L more');
-  expect(text).toContain('Planned food:');
+  expect(text).toContain('On the shopping list:');
 });
 
-test('a bought purchase can be added to the inventory', async ({ page }) => {
-  await page.goto('./#/shopping');
-  await page.getByRole('checkbox', { name: /Rolled porridge oats/ }).check();
-  await expect(page.getByText('Bought (1)')).toBeVisible();
-  await page.getByText('Bought (1)').click();
-  await page.getByRole('link', { name: 'Add to inventory' }).click();
+test('"Purchased" on a list adds the item to the inventory', async ({ page }) => {
+  await page.goto('./#/shopping'); // the old address opens the Lists tab
+  await page.getByRole('button', { name: 'Purchased Rolled porridge oats' }).click();
   const sheet = page.getByRole('dialog', { name: 'Add item' });
   await expect(sheet.getByLabel('Name')).toHaveValue('Rolled porridge oats');
+  await expect(sheet.getByRole('combobox', { name: /^Category/ })).toHaveValue('category:food-mains');
+  await expect(sheet.getByTestId('item-subcategory')).toHaveValue('Breakfast');
+  await sheet.getByLabel('No date').check();
+  await sheet.getByRole('button', { name: 'Add item' }).click();
+  await expect(page.getByText('Bought (1)')).toBeVisible();
+  await page.goto('./#/inventory');
+  await expect(page.getByTestId('item-item:rolled-porridge-oats')).toBeVisible();
 });
 
 test('rotation lists the oldest first and "Use now" takes one', async ({ page }) => {
@@ -103,7 +108,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
       './#/settings?s=sync',
       './#/settings?s=data',
       './#/method',
-      './#/shopping',
+      './#/lists',
       './#/rotation',
     ];
     for (const url of screens) {
@@ -122,10 +127,11 @@ test('release 1.1: scenarios, goal and medicine essentials on the dashboard', as
   await expect(page.getByTestId('tile-medicine')).toContainText('0 of 4');
   await expect(page.getByText('14 days to your 14-day goal')).toBeVisible();
 
-  // Power cut adds lighting.
-  await expect(page.getByTestId('bar-light_days')).toHaveCount(0);
-  await page.getByRole('group', { name: 'Scenario' }).getByRole('button', { name: 'Power cut' }).click();
+  // Power (lighting) counts at home; there is no separate power-cut scenario.
   await expect(page.getByTestId('bar-light_days')).toBeVisible();
+  await expect(
+    page.getByRole('group', { name: 'Scenario' }).getByRole('button', { name: 'Power cut' }),
+  ).toHaveCount(0);
 
   // Go bag: nothing in the grab bags yet, judged against 3 days, no cooking fuel.
   await page.getByRole('group', { name: 'Scenario' }).getByRole('button', { name: 'Go bag' }).click();

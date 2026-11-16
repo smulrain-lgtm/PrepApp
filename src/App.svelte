@@ -8,12 +8,12 @@
   import Inventory from './views/Inventory.svelte';
   import Rotation from './views/Rotation.svelte';
   import Settings from './views/Settings.svelte';
-  import Shopping from './views/Shopping.svelte';
+  import Lists from './views/Lists.svelte';
   import Method from './views/Method.svelte';
   import SyncBadge from './components/SyncBadge.svelte';
 
   /** Screens opened from the dashboard; the Dashboard tab stays highlighted. */
-  type Page = TabId | 'shopping' | 'rotation' | 'method';
+  type Page = TabId | 'method';
 
   interface Route {
     page: Page;
@@ -23,19 +23,16 @@
   /** #/inventory?status=expired → { page: 'inventory', params: status=expired } */
   function parseHash(): Route {
     const [path, query = ''] = location.hash.replace(/^#\/?/, '').split('?');
-    const page: Page =
-      isTabId(path) || path === 'shopping' || path === 'rotation' || path === 'method' ? path : 'dashboard';
+    // #/shopping (before 1.3) is now the Lists tab.
+    if (path === 'shopping') return { page: 'lists', params: new URLSearchParams(query) };
+    const page: Page = isTabId(path) || path === 'method' ? path : 'dashboard';
     return { page, params: new URLSearchParams(query) };
   }
 
   let route = $state<Route>(parseHash());
   let online = $state(navigator.onLine);
 
-  const active = $derived<TabId>(
-    route.page === 'shopping' || route.page === 'rotation' || route.page === 'method'
-      ? 'dashboard'
-      : route.page,
-  );
+  const active = $derived<TabId>(route.page === 'method' ? 'dashboard' : route.page);
 
   function select(id: TabId) {
     route = { page: id, params: new URLSearchParams() };
@@ -96,16 +93,16 @@
       <div class="card error" role="alert">{store.error}</div>
     {:else if !store.ready}
       <p class="muted" aria-live="polite">Loading…</p>
-    {:else if route.page === 'shopping'}
-      <Shopping />
-    {:else if route.page === 'rotation'}
-      <Rotation />
     {:else if route.page === 'method'}
       <Method />
     {:else if active === 'dashboard'}
       <Dashboard />
     {:else if active === 'inventory'}
       <Inventory params={route.params} />
+    {:else if active === 'lists'}
+      <Lists params={route.params} />
+    {:else if active === 'rotation'}
+      <Rotation />
     {:else if active === 'checklist'}
       <Checklist />
     {:else if active === 'info'}
@@ -157,8 +154,16 @@
     border-radius: 0;
     background: none;
     color: var(--text-2);
-    font-size: 0.7rem;
+    font-size: 0.62rem;
     padding: 6px 0 4px;
+    min-width: 0;
+  }
+
+  .tab span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .tab.active {

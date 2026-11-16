@@ -7,6 +7,7 @@
   import { computeReadiness, medicineEssentials, pastDateRule, type Band } from '../lib/readiness';
   import { applyScenario, loadScenario, saveScenario, SCENARIOS, type Scenario } from '../lib/scenario';
   import { buildShoppingList, shoppingCount } from '../lib/shopping';
+  import { medicationCover } from '../lib/stock-links';
   import { store } from '../lib/store.svelte';
 
   const snap = $derived(store.snapshot!);
@@ -28,7 +29,18 @@
 
   const tiles = $derived(r.metrics.filter((m) => m.critical && m.days !== null));
   const limitingLabel = $derived(METRIC_INFO.find((m) => m.id === r.limiting)?.label);
-  const essentials = $derived(medicineEssentials(snap.checklistItems, MEDICINE_ESSENTIALS));
+  const essentials = $derived(medicineEssentials(store.resolvedChecklist!.lines, MEDICINE_ESSENTIALS));
+  const meds = $derived(medicationCover(snap, r.targetDays));
+
+  function medText(m: (typeof meds)[number]): string {
+    const name = m.medication.name || 'Medicine';
+    if (m.stock === null) return `${m.person.name}: ${name} – not linked to the inventory`;
+    if (m.stock === 0) return `${m.person.name}: ${name} – none in stock`;
+    const units = `${m.stock} ${m.item!.unit}${m.stock === 1 ? '' : 's'}`;
+    return m.days === null
+      ? `${m.person.name}: ${name} – ${units}`
+      : `${m.person.name}: ${name} – ${units}, ${formatDays(m.days)} days`;
+  }
 
   // Ruler: 0 → the goal (or further, if the store already lasts longer).
   const scale = $derived(Math.max(r.goalDays, Math.ceil(r.readinessDays)));
@@ -84,7 +96,7 @@
 
   const checklist = $derived(store.checklist!);
   const checklistPct = $derived(checklist.total ? Math.round((checklist.have / checklist.total) * 100) : 0);
-  const shopping = $derived(buildShoppingList(snap, home));
+  const shopping = $derived(buildShoppingList(snap, home, store.today));
   const dueChecks = $derived(checklist.dueChecks);
 
   const expiryTiles = $derived([
@@ -138,7 +150,7 @@
       {#if limitingLabel}
         <div class="limit-row">
           <p class="limiting" data-testid="limiting"><strong>{limitingLabel}</strong> runs out first.</p>
-          {#if scenario !== 'go_bag'}<a class="restock" href="#/shopping">Restock ›</a>{/if}
+          {#if scenario !== 'go_bag'}<a class="restock" href="#/lists">Restock ›</a>{/if}
         </div>
       {/if}
     </section>
@@ -197,6 +209,16 @@
           {#if essentials.missing.length}
             <span class="detail">Still need: {essentials.missing.join(', ')}</span>
           {/if}
+          {#if meds.length}
+            <ul class="meds" data-testid="med-cover">
+              {#each meds as m (m.medication.id)}
+                <li>
+                  <span aria-hidden="true">{m.band === 'green' ? '✓' : m.band === 'amber' ? '!' : '✕'}</span>
+                  {medText(m)}{m.band === 'green' ? '' : m.band === 'amber' ? ' (low)' : ' (short)'}
+                </li>
+              {/each}
+            </ul>
+          {/if}
         </a>
       </li>
     </ul>
@@ -223,7 +245,7 @@
 
   <section aria-labelledby="shopping-heading">
     <h2 id="shopping-heading">Shopping list</h2>
-    <a class="card link-card" href="#/shopping" data-testid="shopping-card">
+    <a class="card link-card" href="#/lists" data-testid="shopping-card">
       <span><strong>{shoppingCount(shopping)}</strong> things to buy</span>
       <span class="muted small">
         {shopping.shortfalls.length} shortfalls · {shopping.toBuy.length} planned food · {shopping.need
@@ -514,6 +536,22 @@
   .cat .detail {
     font-size: 0.78rem;
     margin-top: 0.2rem;
+  }
+
+  .meds {
+    list-style: none;
+    margin: 0.35rem 0 0;
+    padding: 0.35rem 0 0;
+    border-top: 1px solid rgb(255 255 255 / 0.35);
+    display: grid;
+    gap: 0.15rem;
+    font-size: 0.78rem;
+  }
+
+  .meds span {
+    display: inline-block;
+    width: 1.1em;
+    font-weight: 800;
   }
 
   .tag {

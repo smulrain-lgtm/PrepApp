@@ -112,7 +112,7 @@ test('adds a new item with a batch, and it counts', async ({ page }) => {
   await sheet.getByRole('button', { name: 'Add item' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
 
-  await expect(page.getByTestId('item-item:bottled-water-2-l')).toContainText('2 packs');
+  await expect(page.getByTestId('item-item:bottled-water-2-l')).toContainText('2 bottles');
   await nav(page, 'Dashboard');
   await expect(page.getByTestId('bar-water_l')).toContainText('Have 4 L');
 });

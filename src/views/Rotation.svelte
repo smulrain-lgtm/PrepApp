@@ -1,27 +1,89 @@
 <script lang="ts">
   import StatusBadge from '../components/StatusBadge.svelte';
+  import { recentEntry } from '../lib/lists';
   import { LOCATIONS } from '../lib/model/constants';
   import { formatDate } from '../lib/model/dates';
-  import { rotationRows } from '../lib/rotation';
+  import { filterRotation, rotationRows, type RotationRow, type RotationView } from '../lib/rotation';
   import { store } from '../lib/store.svelte';
 
-  let showAll = $state(false);
-  const rows = $derived(rotationRows(store.snapshot!, store.today));
-  const shown = $derived(
-    showAll ? rows : rows.filter((r) => r.status === 'expired' || r.status === 'use_soon'),
-  );
+  const KEY = 'prepapp.rotation';
+  function load(): { view: RotationView; foodOnly: boolean } {
+    try {
+      const v = JSON.parse(localStorage.getItem(KEY) ?? '{}') as { view?: RotationView; foodOnly?: boolean };
+      return { view: v.view ?? 'due', foodOnly: v.foodOnly ?? true };
+    } catch {
+      return { view: 'due', foodOnly: true };
+    }
+  }
+  const saved = load();
+  let view = $state<RotationView>(saved.view);
+  let foodOnly = $state(saved.foodOnly);
+  $effect(() => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ view, foodOnly }));
+    } catch {
+      /* per-device convenience only */
+    }
+  });
+
+  const VIEWS: { id: RotationView; label: string }[] = [
+    { id: 'due', label: 'Due' },
+    { id: 'dated', label: 'All batches' },
+    { id: 'all', label: 'Everything' },
+  ];
+  const EMPTY: Record<RotationView, string> = {
+    due: 'Nothing expired or due for use soon.',
+    dated: 'No batches with a best-before date.',
+    all: 'Nothing in stock.',
+  };
+
+  const snap = $derived(store.snapshot!);
+  const rows = $derived(rotationRows(snap, store.today));
+  const shown = $derived(filterRotation(rows, view, foodOnly, snap.categories));
+
+  /** Use one now: one less in stock, one more on the Recently used list. */
+  async function useNow(r: RotationRow) {
+    const category = snap.categories.find((c) => c._id === r.item.categoryId);
+    await store.run(async (repo) => {
+      await repo.recordMovement(r.batch._id, -1, 'used');
+      // The latest snapshot, so quick repeated taps each add one.
+      await repo.save(recentEntry(store.snapshot!, r.item, category, new Date().toISOString()));
+    }, `Moved 1 × ${r.item.name} to the kitchen. Added to Recently used.`);
+  }
 </script>
 
-<a class="back" href="#/dashboard">‹ Dashboard</a>
 <h1>Rotation</h1>
 <p class="muted">
-  Every batch in stock, soonest best-before first. Eat the oldest and replace it: tap <strong>Use now</strong> when
-  you move a pack to the kitchen.
+  Stock in best-before order, oldest first. Eat the oldest and replace it: tap <strong>Use now</strong> when
+  you move a pack to the kitchen, and it goes on the
+  <a href="#/lists?list=list:recently-used">Recently used</a> list.
 </p>
-<label class="all">
-  <input type="checkbox" bind:checked={showAll} /> Show all batches ({rows.length}), not just expired and use
-  soon
-</label>
+
+<div class="controls">
+  <div class="segmented" role="group" aria-label="Which items">
+    <button class:selected={foodOnly} aria-pressed={foodOnly} onclick={() => (foodOnly = true)}
+      >Food items</button
+    >
+    <button class:selected={!foodOnly} aria-pressed={!foodOnly} onclick={() => (foodOnly = false)}
+      >All items</button
+    >
+  </div>
+  <div class="segmented" role="group" aria-label="Show">
+    {#each VIEWS as v (v.id)}
+      <button class:selected={view === v.id} aria-pressed={view === v.id} onclick={() => (view = v.id)}
+        >{v.label}</button
+      >
+    {/each}
+  </div>
+</div>
+<p class="muted small" data-testid="rotation-count">
+  Showing {shown.length}
+  {shown.length === 1 ? 'batch' : 'batches'}{view === 'due'
+    ? ': expired and use soon'
+    : view === 'dated'
+      ? ' with a best-before date'
+      : ', dated and undated'}.
+</p>
 
 <ul class="card list">
   {#each shown as r (r.batch._id)}
@@ -36,34 +98,49 @@
       <StatusBadge status={r.status} />
       <button
         aria-label="Use one {r.item.name} dated {formatDate(r.batch.bestBefore)} now"
-        onclick={() =>
-          store.run(
-            (repo) => repo.recordMovement(r.batch._id, -1, 'used'),
-            `Moved 1 × ${r.item.name} to the kitchen.`,
-          )}>Use now</button
+        onclick={() => useNow(r)}>Use now</button
       >
     </li>
   {:else}
-    <li class="muted">Nothing expired or due for use soon.</li>
+    <li class="muted">{EMPTY[view]}</li>
   {/each}
 </ul>
 
 <style>
-  .back {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    color: var(--accent);
-    font-weight: 600;
-    text-decoration: none;
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 0.5rem 0;
   }
 
-  .all {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 44px;
-    margin-bottom: 0.5rem;
+  .segmented {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .segmented button {
+    border: 0;
+    border-radius: 0;
+    border-right: 1px solid var(--border);
+    padding: 0 0.9rem;
+    background: var(--surface);
+  }
+
+  .segmented button:last-child {
+    border-right: 0;
+  }
+
+  .segmented .selected {
+    background: var(--accent);
+    color: var(--accent-contrast);
+  }
+
+  a {
+    color: var(--accent);
+    font-weight: 600;
   }
 
   .list {

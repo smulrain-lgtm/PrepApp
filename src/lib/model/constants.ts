@@ -1,4 +1,4 @@
-import type { Category, DailyNeeds, LocationId, Metric, Settings } from './types';
+import type { Category, DailyNeeds, ListDoc, LocationId, MealType, Metric, Settings } from './types';
 
 export interface LocationInfo {
   id: LocationId;
@@ -97,8 +97,72 @@ export const INGREDIENTS_CATEGORY: Category = {
   defaultMetric: 'kcal',
 };
 
-/** Categories added after first release: written on start-up if a device lacks them. */
-export const ADDED_CATEGORIES: Category[] = [INGREDIENTS_CATEGORY];
+/** Lists added in 1.3; fixed records, so two devices adding them never conflict. */
+export const SHOPPING_LIST_ID = 'list:shopping';
+export const RECENT_LIST_ID = 'list:recently-used';
+const LIST_TIME = '2026-11-17T00:00:00.000Z';
+export const BUILT_IN_LISTS: ListDoc[] = [
+  {
+    _id: SHOPPING_LIST_ID,
+    type: 'list',
+    updatedAt: LIST_TIME,
+    name: 'Shopping list',
+    order: 0,
+    kind: 'shopping',
+  },
+  {
+    _id: RECENT_LIST_ID,
+    type: 'list',
+    updatedAt: LIST_TIME,
+    name: 'Recently used',
+    order: 1,
+    kind: 'recent',
+  },
+];
+
+/** Records added after first release: written on start-up if a device lacks them. */
+export const ADDED_DOCS = [INGREDIENTS_CATEGORY, ...BUILT_IN_LISTS];
+
+/** "One unit is a…" choices per category until the household edits them. */
+export const DEFAULT_UNITS: Record<string, string[]> = {
+  'category:water': ['bottle', 'container', 'pack'],
+  'category:food-mains': ['pack', 'pouch', 'tin'],
+  'category:food-sides': ['pack', 'pouch', 'tin'],
+  'category:food-desserts': ['pack', 'pouch', 'tin'],
+  'category:food-snacks': ['pack', 'bar', 'bag'],
+  'category:food-drinks': ['pack', 'sachet', 'jar', 'carton'],
+  'category:food-ingredients': ['bag', 'tin', 'jar', 'bottle', 'pack'],
+  'category:pet-food': ['bag', 'tin', 'pouch'],
+  'category:cooking-fuel': ['canister', 'bag', 'bottle'],
+  'category:power-light': ['item', 'pack', 'set'],
+  'category:safety-first-aid': ['pack', 'box', 'item'],
+};
+export const FALLBACK_UNITS = ['pack', 'item', 'box', 'bottle'];
+
+/** Meal types on the Checklist's Food box, with servings per person per day. */
+export const MEAL_TYPES: { id: MealType; label: string; perDay: number }[] = [
+  { id: 'breakfast', label: 'Breakfasts', perDay: 1 },
+  { id: 'main', label: 'Main meals', perDay: 2 },
+  { id: 'side', label: 'Sides', perDay: 1 },
+  { id: 'dessert', label: 'Desserts', perDay: 1 },
+  { id: 'snack', label: 'Snacks', perDay: 2 },
+];
+
+/** Food category → meal type (Breakfast is a sub-category, matched first). */
+export const MEAL_CATEGORY: Record<string, MealType> = {
+  'category:food-mains': 'main',
+  'category:food-sides': 'side',
+  'category:food-desserts': 'dessert',
+  'category:food-snacks': 'snack',
+};
+
+/** Checklist lines the Food box replaces (hidden from the checklist and its counts). */
+export const MEAL_CHECKLIST_LINES = [
+  'Backpacking meals – lunch & dinner',
+  'Breakfasts – porridge pots / sachets, granola',
+  'Snacks – cereal bars, nuts, trail mix, chocolate',
+];
+export const FOOD_SECTION_ID = 'section:food';
 
 export const DEFAULT_SETTINGS: Omit<Settings, 'updatedAt'> = {
   _id: 'settings',
@@ -112,9 +176,9 @@ export const DEFAULT_SETTINGS: Omit<Settings, 'updatedAt'> = {
   freezing: false,
   warningMonths: 6,
   dailyNeeds: DEFAULT_DAILY_NEEDS,
-  // Medicines are shown as essentials covered, and lighting via the checklist
-  // (it becomes critical in the power-cut scenario), so neither sets the days.
-  criticalMetrics: ['water_l', 'kcal', 'pet_food_g', 'fuel_g'],
+  // Medicines are shown as essentials covered, so they do not set the days.
+  // Lighting (power) counts at home since 1.3.
+  criticalMetrics: ['water_l', 'kcal', 'pet_food_g', 'fuel_g', 'light_days'],
   goalDays: 14,
   pastDateRule: 'exclude',
 };

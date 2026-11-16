@@ -9,7 +9,7 @@
   import StatusBadge from '../components/StatusBadge.svelte';
   import Stepper from '../components/Stepper.svelte';
   import Toggle from '../components/Toggle.svelte';
-  import { listedSubCategories, subCategoriesOf } from '../lib/categories';
+  import { listedSubCategories, listedUnits, subCategoriesOf, unitsOf } from '../lib/categories';
   import { buildItemRows, EXCLUSION_LABEL } from '../lib/inventory-view';
   import { DEFAULT_KCAL, LOCATIONS } from '../lib/model/constants';
   import { formatDate } from '../lib/model/dates';
@@ -23,12 +23,18 @@
     open,
     itemId,
     preset = {},
+    presetQuantity = 1,
     onclose,
+    onadded,
   }: {
     open: boolean;
     itemId: string | null;
     preset?: ItemPreset;
+    /** Starting quantity for the batch (e.g. how many were bought). */
+    presetQuantity?: number;
     onclose: () => void;
+    /** Called after a new item is added or a batch is added to this one. */
+    onadded?: (itemId: string, quantity: number) => void;
   } = $props();
 
   const METRIC_LABEL: Record<Metric, string> = {
@@ -60,12 +66,18 @@
   }
   let label = $state<LabelForm>(blankLabel());
   let newSub = $state('');
+  let newUnit = $state('');
   let loadedFor = $state<string | null | undefined>(undefined);
 
   const category = $derived(snap.categories.find((c) => c._id === form.categoryId));
   const subOptions = $derived.by(() => {
     const list = category ? subCategoriesOf(category, snap.items) : [];
     const current = form.subCategory?.trim();
+    return current && current !== NEW_SUB && !list.includes(current) ? [...list, current] : list;
+  });
+  const unitOptions = $derived.by(() => {
+    const list = category ? unitsOf(category, snap.items) : [];
+    const current = form.unit?.trim();
     return current && current !== NEW_SUB && !list.includes(current) ? [...list, current] : list;
   });
   const labelKcal = $derived(
@@ -86,7 +98,7 @@
       name: '',
       categoryId: first?._id ?? '',
       subCategory: '',
-      unit: 'pack',
+      unit: first ? listedUnits(first)[0] : 'pack',
       perUnit: { metric: first?.defaultMetric ?? 'none', amount: 1 },
       location: 'garage',
       supplier: '',
@@ -124,6 +136,7 @@
     if (loadedFor === itemId) return;
     loadedFor = itemId;
     newSub = '';
+    newUnit = '';
     if (existing) {
       const item = $state.snapshot(existing) as Item;
       form = {
@@ -141,6 +154,7 @@
         barcode: item.barcode ?? '',
       };
       label = labelFrom(item);
+      newBatch = { date: '', undated: false, quantity: presetQuantity };
     } else {
       const p = $state.snapshot(preset) as ItemPreset;
       const cat = snap.categories.find((c) => c._id === p.categoryId && !c.deleted);
@@ -151,9 +165,10 @@
         ...rest,
         categoryId: cat?._id ?? blank().categoryId,
         name: p.name ?? '',
+        unit: p.unit ?? (cat ? listedUnits(cat)[0] : blank().unit) ?? 'pack',
       };
       label = labelFrom({ packSize, nutrition });
-      newBatch = { date: '', undated: false, quantity: 1 };
+      newBatch = { date: '', undated: false, quantity: presetQuantity };
     }
   });
 
@@ -164,6 +179,7 @@
       form.subCategory = '';
     if (existing) return;
     form.perUnit.metric = cat.defaultMetric;
+    if (!unitsOf(cat, snap.items).includes(form.unit)) form.unit = listedUnits(cat)[0] ?? 'pack';
     recalc();
   }
 
@@ -194,6 +210,8 @@
     if (!name) return store.notify('Give the item a name.');
     const sub = (form.subCategory === NEW_SUB ? newSub : form.subCategory)?.trim() || undefined;
     if (form.subCategory === NEW_SUB && !sub) return store.notify('Type the new sub-category, or pick one.');
+    const unit = (form.unit === NEW_SUB ? newUnit : form.unit)?.trim();
+    if (!unit) return store.notify('Say what one unit is (pack, tin, bottle…).');
     const barcode = cleanBarcode(form.barcode ?? '') || undefined;
     if (barcode) {
       const other = snap.items.find((i) => !i.deleted && i.barcode === barcode && i._id !== existing?._id);
@@ -208,6 +226,7 @@
       ...$state.snapshot(form),
       name,
       subCategory: sub,
+      unit,
       supplier: form.supplier?.trim() || undefined,
       notes: form.notes?.trim() || undefined,
       barcode,
@@ -215,29 +234,33 @@
       nutrition: cleanNutrition(label.per100),
       perUnit: { ...form.perUnit, amount: Number(form.perUnit.amount) || 0 },
     } as Item;
-    // A sub-category typed here joins its category's list.
+    // A sub-category or unit typed here joins its category's list.
     const cat = snap.categories.find((c) => c._id === doc.categoryId);
-    const listed = cat ? subCategoriesOf(cat, snap.items) : [];
-    const catDoc =
-      cat && sub && !listedSubCategories(cat).includes(sub)
-        ? { ...cat, subCategories: [...listed.filter((n) => n !== sub), sub] }
-        : null;
+    let catDoc = null;
+    if (cat && sub && !listedSubCategories(cat).includes(sub))
+      catDoc = { ...cat, subCategories: [...subCategoriesOf(cat, snap.items).filter((n) => n !== sub), sub] };
+    if (cat && !listedUnits(cat).includes(unit))
+      catDoc = { ...(catDoc ?? cat), units: [...unitsOf(cat, snap.items).filter((n) => n !== unit), unit] };
+    const batchQty = !existing && (newBatch.undated || newBatch.date) ? newBatch.quantity : 0;
     const ok = await store.run(
       async (repo) => {
         await repo.save(doc);
         if (catDoc) await repo.save(catDoc);
-        if (!existing && (newBatch.undated || newBatch.date) && newBatch.quantity > 0) {
-          await repo.addStock(id, newBatch.undated ? null : newBatch.date, newBatch.quantity);
-        }
+        if (batchQty > 0) await repo.addStock(id, newBatch.undated ? null : newBatch.date, batchQty);
       },
       existing ? 'Saved.' : `Added ${name}.`,
     );
     saving = false;
-    if (ok && sub) {
-      form.subCategory = sub;
+    if (ok) {
+      if (sub) form.subCategory = sub;
+      form.unit = unit;
       newSub = '';
+      newUnit = '';
     }
-    if (ok && !existing) onclose();
+    if (ok && !existing) {
+      onadded?.(id, batchQty);
+      onclose();
+    }
   }
   async function addBatch() {
     if (!existing) return;
@@ -247,7 +270,10 @@
       (repo) => repo.addStock(existing._id, date, newBatch.quantity),
       `Added ${newBatch.quantity} × ${existing.name}.`,
     );
-    if (ok) newBatch = { date: '', undated: false, quantity: 1 };
+    if (ok) {
+      onadded?.(existing._id, newBatch.quantity);
+      newBatch = { date: '', undated: false, quantity: 1 };
+    }
   }
 
   async function changeBatch(batchId: string, delta: number) {
@@ -317,6 +343,12 @@
         <input type="checkbox" bind:checked={newBatch.undated} /> No date
       </label>
       <Stepper label="Quantity" value={newBatch.quantity} min={1} onchange={(v) => (newBatch.quantity = v)} />
+      <button
+        type="button"
+        class="plus10"
+        aria-label="Add 10 to the quantity"
+        onclick={() => (newBatch.quantity += 10)}>+10</button
+      >
       {#if existing}<button class="primary" onclick={addBatch}>Add</button>{/if}
     </div>
   </section>
@@ -345,6 +377,12 @@
         </select>
       </label>
     </div>
+    {#if form.unit === NEW_SUB}
+      <label>
+        <span>New unit</span>
+        <input bind:value={newUnit} placeholder="e.g. jerrycan" />
+      </label>
+    {/if}
     {#if form.subCategory === NEW_SUB}
       <label>
         <span>New sub-category</span>
@@ -365,7 +403,10 @@
     <div class="two">
       <label>
         <span>One unit is a…</span>
-        <input bind:value={form.unit} placeholder="pack, bottle, canister" />
+        <select bind:value={form.unit} data-testid="item-unit">
+          {#each unitOptions as u (u)}<option value={u}>{u}</option>{/each}
+          <option value={NEW_SUB}>Other…</option>
+        </select>
       </label>
       <label>
         <span>Supplier</span>
@@ -444,11 +485,15 @@
         </div>
         {#if labelKcal !== null && form.perUnit.metric === 'kcal'}
           <p class="muted small" data-testid="label-kcal">
-            {labelKcal.toLocaleString('en-GB')} kcal per {form.unit || 'unit'}, worked out from the label.
+            {labelKcal.toLocaleString('en-GB')} kcal per {form.unit && form.unit !== NEW_SUB
+              ? form.unit
+              : newUnit || 'unit'}, worked out from the label.
           </p>
         {:else if form.perUnit.metric === 'kcal'}
           <p class="muted small">
-            Fill in the pack size and energy to work out the calories per {form.unit || 'unit'}.
+            Fill in the pack size and energy to work out the calories per {form.unit && form.unit !== NEW_SUB
+              ? form.unit
+              : newUnit || 'unit'}.
           </p>
         {/if}
       </fieldset>
@@ -639,6 +684,11 @@
 
   .danger {
     color: var(--bad);
+  }
+
+  .plus10 {
+    padding: 0 0.8rem;
+    font-weight: 700;
   }
 
   .label-box {

@@ -2,7 +2,7 @@
  * Categories and sub-categories: the lists offered in the item sheet and the
  * inventory filter, and the edits made in Settings → Categories.
  */
-import { DEFAULT_SUBCATEGORIES } from './model/constants';
+import { DEFAULT_SUBCATEGORIES, DEFAULT_UNITS, FALLBACK_UNITS } from './model/constants';
 import type { Category, Item } from './model/types';
 import { slug } from '../seed/csv';
 
@@ -23,6 +23,23 @@ export function subCategoriesOf(category: Category, items: Item[]): string[] {
     if (item.deleted || item.categoryId !== category._id) continue;
     const name = item.subCategory?.trim();
     if (name && !known.has(name)) extra.add(name);
+  }
+  return [...listed, ...[...extra].sort((a, b) => a.localeCompare(b))];
+}
+
+/** The category's "One unit is a…" choices: as edited, else the defaults. */
+export function listedUnits(category: Category): string[] {
+  return category.units ?? DEFAULT_UNITS[category._id] ?? FALLBACK_UNITS;
+}
+
+/** Units to offer for a category: its list, then any others its items use. */
+export function unitsOf(category: Category, items: Item[]): string[] {
+  const listed = listedUnits(category);
+  const extra = new Set<string>();
+  for (const item of items) {
+    if (item.deleted || item.categoryId !== category._id) continue;
+    const unit = item.unit?.trim();
+    if (unit && !listed.includes(unit)) extra.add(unit);
   }
   return [...listed, ...[...extra].sort((a, b) => a.localeCompare(b))];
 }
@@ -74,6 +91,23 @@ export function planSubCategories(
   edits: SubCategoryEdit[],
   items: Item[],
 ): SubCategoryPlan {
+  return planNames(categoryId, edits, items, 'subCategory');
+}
+
+/**
+ * The same for the units list. Renamed units follow through to the items;
+ * a removed unit stays on the items that use it (every item needs a unit).
+ */
+export function planUnits(categoryId: string, edits: SubCategoryEdit[], items: Item[]): SubCategoryPlan {
+  return planNames(categoryId, edits, items, 'unit');
+}
+
+function planNames(
+  categoryId: string,
+  edits: SubCategoryEdit[],
+  items: Item[],
+  field: 'subCategory' | 'unit',
+): SubCategoryPlan {
   const errors: string[] = [];
   const list: string[] = [];
   const seen = new Set<string>();
@@ -99,11 +133,11 @@ export function planSubCategories(
   const changed: Item[] = [];
   const removedCount = new Map<string, number>();
   for (const item of inCategory) {
-    const current = item.subCategory?.trim();
+    const current = item[field]?.trim();
     if (!current) continue;
     if (rename.has(current)) {
-      changed.push({ ...item, subCategory: rename.get(current) });
-    } else if (!kept.has(current) && !list.includes(current)) {
+      changed.push({ ...item, [field]: rename.get(current) });
+    } else if (field === 'subCategory' && !kept.has(current) && !list.includes(current)) {
       changed.push({ ...item, subCategory: undefined });
       removedCount.set(current, (removedCount.get(current) ?? 0) + 1);
     }

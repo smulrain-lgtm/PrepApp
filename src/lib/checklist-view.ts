@@ -106,6 +106,8 @@ export function groupChecklist(
   lines: ChecklistItem[],
   filter: ChecklistFilter,
   today: IsoDate,
+  /** Sections listed even with no matching lines (the Food section holds the Food box). */
+  keep: string[] = [],
 ): ChecklistGroup[] {
   return sections
     .filter((s) => !s.deleted)
@@ -118,5 +120,5 @@ export function groupChecklist(
         total: inSection.length,
       };
     })
-    .filter((g) => g.lines.length > 0);
+    .filter((g) => g.lines.length > 0 || keep.includes(g.section._id));
 }

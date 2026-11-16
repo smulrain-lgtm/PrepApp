@@ -61,13 +61,13 @@
       <tr>
         <th scope="row">Lighting</th>
         <td>1 day of cover</td>
-        <td>Counts only in the Power cut scenario.</td>
+        <td>Power is a home requirement: lighting counts alongside water, food and cooking gas.</td>
       </tr>
     </tbody>
   </table>
   <p class="muted small">
     Medicines are not counted in days: the Medicines tile shows how many essentials on the checklist are
-    marked Have.
+    marked Have, and each person's own medicines with the stock and days it covers (Settings › Household).
   </p>
 </section>
 
@@ -91,10 +91,21 @@
 </section>
 
 <section class="card">
+  <h2>The Food box on the Checklist</h2>
+  <p>
+    Breakfasts, main meals, sides, desserts and snacks are counted from the inventory (usable packs, by the
+    rules above) against people × days × meals a day ({s.people} × {s.targetDays} × the figures in Settings › Household).
+    A Breakfast sub-category counts as breakfast in any food category. Green at the target, amber from half, red
+    below.
+  </p>
+</section>
+
+<section class="card">
   <h2>Scenarios</h2>
   <ul>
-    <li><strong>Home:</strong> everything as set in Settings.</li>
-    <li><strong>Power cut:</strong> lighting also counts.</li>
+    <li>
+      <strong>Home:</strong> everything as set in Settings, assuming no mains power, so lighting counts too.
+    </li>
     <li><strong>Garage lost:</strong> only indoor and grab-bag stock.</li>
     <li>
       <strong>Go bag:</strong> only what is in the grab bags, against 72 hours, eaten cold (no cooking gas).

@@ -5,7 +5,9 @@
     moveCategory,
     newCategoryId,
     planSubCategories,
+    planUnits,
     subCategoriesOf,
+    unitsOf,
     type SubCategoryEdit,
   } from '../lib/categories';
   import type { Category, Metric } from '../lib/model/types';
@@ -29,42 +31,63 @@
   let sheetOpen = $state(false);
   let name = $state('');
   let metric = $state<Metric>('none');
-  let subs = $state<SubCategoryEdit[]>([]);
-  let newSub = $state('');
+  type Kind = 'sub' | 'unit';
+  /** The two name lists being edited: sub-categories and "One unit is a…" units. */
+  let names = $state<Record<Kind, SubCategoryEdit[]>>({ sub: [], unit: [] });
+  let fresh = $state<Record<Kind, string>>({ sub: '', unit: '' });
+  const WORD: Record<Kind, { title: string; one: string; field: 'subCategory' | 'unit'; hint: string }> = {
+    sub: {
+      title: 'Sub-categories',
+      one: 'sub-category',
+      field: 'subCategory',
+      hint: 'The number is how many items use each one. Renaming updates those items.',
+    },
+    unit: {
+      title: 'One unit is a…',
+      one: 'unit',
+      field: 'unit',
+      hint: 'Offered when adding an item. Renaming updates the items; a removed unit stays on items that use it.',
+    },
+  };
 
   const editingItems = $derived(editing ? itemsIn(editing._id, snap.items) : []);
-  const useCount = (sub: string | null) =>
-    sub === null ? 0 : editingItems.filter((i) => i.subCategory?.trim() === sub).length;
+  const useCount = (kind: Kind, value: string | null) =>
+    value === null ? 0 : editingItems.filter((i) => i[WORD[kind].field]?.trim() === value).length;
 
   function openEditor(category: Category | null) {
     editing = category;
     name = category?.name ?? '';
     metric = category?.defaultMetric ?? 'none';
-    subs = category ? subCategoriesOf(category, snap.items).map((n) => ({ original: n, name: n })) : [];
-    newSub = '';
+    const asEdits = (list: string[]) => list.map((n) => ({ original: n, name: n }));
+    names = {
+      sub: category ? asEdits(subCategoriesOf(category, snap.items)) : [],
+      unit: asEdits(category ? unitsOf(category, snap.items) : ['pack', 'item']),
+    };
+    fresh = { sub: '', unit: '' };
     sheetOpen = true;
   }
 
-  function addSub(event?: Event) {
+  function addName(kind: Kind, event?: Event) {
     event?.preventDefault();
-    const n = newSub.trim();
+    const n = fresh[kind].trim();
     if (!n) return;
-    if (subs.some((s) => s.name.trim().toLowerCase() === n.toLowerCase()))
+    if (names[kind].some((s) => s.name.trim().toLowerCase() === n.toLowerCase()))
       return store.notify(`“${n}” is already listed.`);
-    subs = [...subs, { original: null, name: n }];
-    newSub = '';
+    names[kind] = [...names[kind], { original: null, name: n }];
+    fresh[kind] = '';
   }
 
-  function moveSub(index: number, direction: -1 | 1) {
+  function moveName(kind: Kind, index: number, direction: -1 | 1) {
     const to = index + direction;
-    if (to < 0 || to >= subs.length) return;
-    const next = [...subs];
+    const list = names[kind];
+    if (to < 0 || to >= list.length) return;
+    const next = [...list];
     [next[index], next[to]] = [next[to], next[index]];
-    subs = next;
+    names[kind] = next;
   }
 
-  function removeSub(index: number) {
-    subs = subs.filter((_, i) => i !== index);
+  function removeName(kind: Kind, index: number) {
+    names[kind] = names[kind].filter((_, i) => i !== index);
   }
 
   async function save(event: SubmitEvent) {
@@ -73,10 +96,22 @@
     if (!clean) return store.notify('Give the category a name.');
     if (categories.some((c) => c._id !== editing?._id && c.name.trim().toLowerCase() === clean.toLowerCase()))
       return store.notify(`There is already a category called “${clean}”.`);
-    const pending = newSub.trim() ? [...subs, { original: null, name: newSub }] : subs;
+    const pending = (kind: Kind) =>
+      $state.snapshot(
+        fresh[kind].trim() ? [...names[kind], { original: null, name: fresh[kind] }] : names[kind],
+      );
     const id = editing?._id ?? newCategoryId(clean, snap.categories);
-    const plan = planSubCategories(id, $state.snapshot(pending), snap.items);
+    const plan = planSubCategories(id, pending('sub'), snap.items);
     if (plan.errors.length) return store.notify(plan.errors[0]);
+    // Units are applied to the items the sub-category plan already changes.
+    const afterSubs = snap.items.map((i) => plan.items.find((c) => c._id === i._id) ?? i);
+    const units = planUnits(id, pending('unit'), afterSubs);
+    if (units.errors.length) return store.notify(units.errors[0]);
+    if (!units.list.length) return store.notify('Keep at least one unit (e.g. pack).');
+    const changedItems = [
+      ...plan.items.filter((i) => !units.items.some((u) => u._id === i._id)),
+      ...units.items,
+    ];
     if (plan.removedInUse.length) {
       const list = plan.removedInUse
         .map((r) => `“${r.name}” (${r.count} item${r.count === 1 ? '' : 's'})`)
@@ -95,11 +130,12 @@
       name: clean,
       defaultMetric: metric,
       subCategories: plan.list,
+      units: units.list,
     };
     const ok = await store.run(
       async (repo) => {
         await repo.save(doc);
-        for (const item of plan.items) await repo.save(item);
+        for (const item of changedItems) await repo.save(item);
       },
       editing ? `Saved ${clean}.` : `Added ${clean}.`,
     );
@@ -160,7 +196,7 @@
       <input bind:value={name} required data-testid="category-name" />
     </label>
     <label>
-      <span>New items count as</span>
+      <span>Counts as <span class="muted hint">(what new items in it add to readiness)</span></span>
       <select bind:value={metric}>
         {#each Object.entries(METRIC_LABEL) as [value, label] (value)}
           <option {value}>{label}</option>
@@ -168,53 +204,8 @@
       </select>
     </label>
 
-    <fieldset>
-      <legend>Sub-categories</legend>
-      {#if subs.length}
-        <ul class="subs">
-          {#each subs as sub, i (i)}
-            {@const used = useCount(sub.original)}
-            <li>
-              <label class="sub-name">
-                <span class="visually-hidden">Sub-category {i + 1}</span>
-                <input bind:value={sub.name} data-testid="sub-{i}" />
-              </label>
-              <span class="muted uses" title="Items using it">{used}</span>
-              <button
-                type="button"
-                aria-label="Move {sub.name} up"
-                disabled={i === 0}
-                onclick={() => moveSub(i, -1)}>↑</button
-              >
-              <button
-                type="button"
-                aria-label="Move {sub.name} down"
-                disabled={i === subs.length - 1}
-                onclick={() => moveSub(i, 1)}>↓</button
-              >
-              <button type="button" class="danger" aria-label="Remove {sub.name}" onclick={() => removeSub(i)}
-                >✕</button
-              >
-            </li>
-          {/each}
-        </ul>
-        <p class="muted small">The number is how many items use each one. Renaming updates those items.</p>
-      {:else}
-        <p class="muted small">No sub-categories yet.</p>
-      {/if}
-      <div class="add-sub">
-        <label>
-          <span class="visually-hidden">New sub-category</span>
-          <input
-            bind:value={newSub}
-            placeholder="New sub-category"
-            data-testid="new-sub"
-            onkeydown={(e) => e.key === 'Enter' && addSub(e)}
-          />
-        </label>
-        <button type="button" onclick={() => addSub()}>Add</button>
-      </div>
-    </fieldset>
+    {@render nameList('sub')}
+    {@render nameList('unit')}
 
     <div class="actions">
       <button class="primary" type="submit">{editing ? 'Save changes' : 'Add category'}</button>
@@ -237,6 +228,59 @@
     {/if}
   </form>
 </Sheet>
+
+{#snippet nameList(kind: Kind)}
+  {@const w = WORD[kind]}
+  <fieldset data-testid="names-{kind}">
+    <legend>{w.title}</legend>
+    {#if names[kind].length}
+      <ul class="subs">
+        {#each names[kind] as entry, i (i)}
+          <li>
+            <label class="sub-name">
+              <span class="visually-hidden">{w.one} {i + 1}</span>
+              <input bind:value={entry.name} data-testid="{kind}-{i}" />
+            </label>
+            <span class="muted uses" title="Items using it">{useCount(kind, entry.original)}</span>
+            <button
+              type="button"
+              aria-label="Move {entry.name} up"
+              disabled={i === 0}
+              onclick={() => moveName(kind, i, -1)}>↑</button
+            >
+            <button
+              type="button"
+              aria-label="Move {entry.name} down"
+              disabled={i === names[kind].length - 1}
+              onclick={() => moveName(kind, i, 1)}>↓</button
+            >
+            <button
+              type="button"
+              class="danger"
+              aria-label="Remove {entry.name}"
+              onclick={() => removeName(kind, i)}>✕</button
+            >
+          </li>
+        {/each}
+      </ul>
+      <p class="muted small">{w.hint}</p>
+    {:else}
+      <p class="muted small">None yet.</p>
+    {/if}
+    <div class="add-sub">
+      <label>
+        <span class="visually-hidden">New {w.one}</span>
+        <input
+          bind:value={fresh[kind]}
+          placeholder="New {w.one}"
+          data-testid="new-{kind}"
+          onkeydown={(e) => e.key === 'Enter' && addName(kind, e)}
+        />
+      </label>
+      <button type="button" aria-label="Add {w.one}" onclick={() => addName(kind)}>Add</button>
+    </div>
+  </fieldset>
+{/snippet}
 
 <style>
   .intro {
@@ -297,6 +341,11 @@
   .editor {
     display: grid;
     gap: 0.75rem;
+  }
+
+  .hint {
+    font-weight: 400;
+    font-size: 0.85rem;
   }
 
   label {

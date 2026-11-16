@@ -30,7 +30,7 @@
       "kcalPerPerson": 2000,
       "gasGPerPerson": 77
     },
-    "criticalMetrics": ["water_l", "kcal", "pet_food_g", "fuel_g"],
+    "criticalMetrics": ["water_l", "kcal", "pet_food_g", "fuel_g", "light_days"],
     "goalDays": 14,
     "pastDateRule": "exclude",
     "updatedAt": "2026-11-15T00:00:00.000Z"
@@ -169,6 +169,22 @@
     "icon": "flour",
     "order": 5.5,
     "defaultMetric": "kcal"
+  },
+  {
+    "_id": "list:shopping",
+    "type": "list",
+    "updatedAt": "2026-11-17T00:00:00.000Z",
+    "name": "Shopping list",
+    "order": 0,
+    "kind": "shopping"
+  },
+  {
+    "_id": "list:recently-used",
+    "type": "list",
+    "updatedAt": "2026-11-17T00:00:00.000Z",
+    "name": "Recently used",
+    "order": 1,
+    "kind": "recent"
   },
   {
     "_id": "item:steak-vegetables-potato",

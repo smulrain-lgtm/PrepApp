@@ -10,6 +10,9 @@
     targetText,
   } from '../lib/checklist-view';
   import { formatDate } from '../lib/model/dates';
+  import { formatNumber } from '../lib/format';
+  import { itemTotals, linkedAmount, statusFromStock } from '../lib/stock-links';
+  import { scaledTarget } from '../lib/readiness';
   import type { ChecklistItem, ChecklistStatus, ScaleBy } from '../lib/model/types';
   import { store } from '../lib/store.svelte';
   import { slug } from '../seed/csv';
@@ -33,6 +36,7 @@
     scaleBy: ScaleBy;
     notes: string;
     checkIntervalDays: number | null;
+    itemIds: string[];
   }
 
   let form = $state<Form>(blank());
@@ -48,6 +52,7 @@
       scaleBy: 'fixed',
       notes: '',
       checkIntervalDays: null,
+      itemIds: [],
     };
   }
 
@@ -69,8 +74,10 @@
           scaleBy: l.target.scaleBy,
           notes: l.notes ?? '',
           checkIntervalDays: l.checkIntervalDays ?? null,
+          itemIds: [...(l.itemIds ?? [])],
         }
       : blank();
+    linkPick = '';
   });
 
   // Preview of the target with the values being edited.
@@ -78,7 +85,39 @@
     ...(existing ?? ({ _id: '', type: 'checklistItem', updatedAt: '', order: 0 } as ChecklistItem)),
     name: form.name,
     target: { amount: Number(form.amount) || 0, unit: form.unit, scaleBy: form.scaleBy },
+    itemIds: form.itemIds,
   } as ChecklistItem);
+
+  // --- Linked inventory items ---------------------------------------------------
+  const liveItems = $derived(snap.items.filter((i) => !i.deleted));
+  const itemsById = $derived(new Map(snap.items.map((i) => [i._id, i])));
+  const totals = $derived(itemTotals(snap));
+  const linked = $derived(form.itemIds.map((id) => itemsById.get(id)).filter((i) => i && !i.deleted));
+  const linkAmount = $derived(linkedAmount(preview, itemsById, totals));
+  const linkTarget = $derived(scaledTarget(preview, snap.settings));
+  const linkStatus = $derived(linked.length ? statusFromStock(linkAmount, linkTarget) : null);
+  const linkUnit = $derived(form.scaleBy === 'water' ? ' L' : form.scaleBy === 'pet_food' ? ' g' : '');
+  const pickGroups = $derived(
+    snap.categories
+      .filter((c) => !c.deleted)
+      .map((c) => ({
+        category: c,
+        items: liveItems
+          .filter((i) => i.categoryId === c._id && !form.itemIds.includes(i._id))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      }))
+      .filter((g) => g.items.length),
+  );
+  let linkPick = $state('');
+
+  function addLink() {
+    if (linkPick && !form.itemIds.includes(linkPick)) form.itemIds = [...form.itemIds, linkPick];
+    linkPick = '';
+  }
+
+  function removeLink(id: string) {
+    form.itemIds = form.itemIds.filter((x) => x !== id);
+  }
 
   async function save(event: SubmitEvent) {
     event.preventDefault();
@@ -103,7 +142,10 @@
       target: { amount: Number(form.amount) || 0, unit: form.unit.trim(), scaleBy: form.scaleBy },
       notes: form.notes.trim() || undefined,
       checkIntervalDays: form.checkIntervalDays,
+      itemIds: form.itemIds.length ? [...form.itemIds] : undefined,
     };
+    // A linked line keeps the status its stock gives.
+    if (linkStatus) doc.status = linkStatus;
     const ok = await store.run((repo) => repo.save(doc), existing ? 'Saved.' : `Added ${name}.`);
     if (ok) onclose();
   }
@@ -142,15 +184,69 @@
   <form onsubmit={save}>
     <fieldset>
       <legend>Status</legend>
-      <div class="segmented">
-        {#each ['have', 'check', 'need'] as const as st (st)}
-          <label class="{st} " class:selected={form.status === st}>
-            <input type="radio" name="status" value={st} bind:group={form.status} />
-            {STATUS_WORD[st]}
-          </label>
-        {/each}
-      </div>
+      {#if linkStatus}
+        <p class="set-by {linkStatus}" data-testid="link-status">
+          <strong>{STATUS_WORD[linkStatus]}</strong>: set by the linked inventory stock.
+        </p>
+      {:else}
+        <div class="segmented">
+          {#each ['have', 'check', 'need'] as const as st (st)}
+            <label class="{st} " class:selected={form.status === st}>
+              <input type="radio" name="status" value={st} bind:group={form.status} />
+              {STATUS_WORD[st]}
+            </label>
+          {/each}
+        </div>
+      {/if}
     </fieldset>
+
+    {#if form.status === 'have' || linked.length}
+      <fieldset class="links" data-testid="links">
+        <legend>Inventory items</legend>
+        {#if linked.length}
+          <ul>
+            {#each linked as item (item!._id)}
+              <li>
+                <span
+                  >{item!.name}
+                  <span class="muted small"
+                    >· {formatNumber(totals.get(item!._id) ?? 0)} {item!.unit}s in stock</span
+                  ></span
+                >
+                <button
+                  type="button"
+                  class="danger"
+                  aria-label="Unlink {item!.name}"
+                  onclick={() => removeLink(item!._id)}>✕</button
+                >
+              </li>
+            {/each}
+          </ul>
+          <p class="muted small">
+            In stock {formatNumber(linkAmount)}{linkUnit} of {formatNumber(linkTarget)}{linkUnit}. Have at the
+            target, Check when some, Need when none.
+          </p>
+        {:else}
+          <p class="muted small">
+            Link the inventory items that supply this line (several if more than one is needed). Its status
+            then follows their stock. Not in the inventory yet? Add it on the Inventory screen first.
+          </p>
+        {/if}
+        <div class="pick">
+          <label>
+            <span class="visually-hidden">Link an inventory item</span>
+            <select bind:value={linkPick} onchange={addLink} data-testid="link-pick">
+              <option value="">Link an inventory item…</option>
+              {#each pickGroups as g (g.category._id)}
+                <optgroup label={g.category.name}>
+                  {#each g.items as i (i._id)}<option value={i._id}>{i.name}</option>{/each}
+                </optgroup>
+              {/each}
+            </select>
+          </label>
+        </div>
+      </fieldset>
+    {/if}
 
     <label>
       <span>Name</span>
@@ -324,5 +420,47 @@
 
   .danger {
     color: var(--bad);
+  }
+
+  .set-by {
+    margin: 0;
+    padding: 0.6rem 0.8rem;
+    border-radius: 10px;
+  }
+
+  .set-by.have {
+    background: var(--good-bg);
+    color: var(--good);
+  }
+
+  .set-by.check {
+    background: var(--warn-bg);
+    color: var(--warn);
+  }
+
+  .set-by.need {
+    background: var(--bad-bg);
+    color: var(--bad);
+  }
+
+  .links ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .links li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-weight: 400;
+  }
+
+  .links li button {
+    width: 44px;
+    padding: 0;
   }
 </style>

@@ -1,8 +1,9 @@
 <script lang="ts">
   import Stepper from '../components/Stepper.svelte';
   import Toggle from '../components/Toggle.svelte';
-  import { GOAL_PRESETS } from '../lib/model/constants';
-  import type { DailyNeeds, PastDateRule, Pet } from '../lib/model/types';
+  import { GOAL_PRESETS, MEAL_TYPES } from '../lib/model/constants';
+  import type { DailyNeeds, MealType, Medication, PastDateRule, Person, Pet } from '../lib/model/types';
+  import { mealsPerDay } from '../lib/stock-links';
   import { pastDateRule } from '../lib/readiness';
   import { store } from '../lib/store.svelte';
 
@@ -64,6 +65,69 @@
   function updateNeeds(patch: Partial<DailyNeeds>) {
     void store.updateSettings({ dailyNeeds: { ...s.dailyNeeds, ...patch } });
   }
+
+  function setMeals(type: MealType, value: string) {
+    const n = num(value, mealsPerDay(s, type));
+    void store.updateSettings({ mealsPerDay: { ...s.mealsPerDay, [type]: n } });
+  }
+
+  // --- Named people and their medicines -----------------------------------------
+  const members = $derived(s.members ?? []);
+  const medItems = $derived(
+    store
+      .snapshot!.items.filter((i) => !i.deleted)
+      .sort(
+        (a, b) =>
+          Number(b.categoryId === 'category:safety-first-aid') -
+            Number(a.categoryId === 'category:safety-first-aid') || a.name.localeCompare(b.name),
+      ),
+  );
+  const newId = (prefix: string) =>
+    `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+
+  /** Save the people list; the head count is never fewer than the named people. */
+  function saveMembers(list: Person[], people = Math.max(s.people, list.length)) {
+    void store.updateSettings({ members: list, people });
+  }
+
+  function addPerson() {
+    const list = [
+      ...members,
+      { id: newId('person'), name: `Person ${members.length + 1}`, age: null, medications: [] },
+    ];
+    saveMembers(list, Math.max(s.people, list.length));
+  }
+
+  function updatePerson(index: number, patch: Partial<Person>) {
+    saveMembers(members.map((p, i) => (i === index ? { ...p, ...patch } : p)));
+  }
+
+  function removePerson(index: number) {
+    if (!confirm(`Remove ${members[index].name}? The household count goes down by one too.`)) return;
+    saveMembers(
+      members.filter((_, i) => i !== index),
+      Math.max(1, s.people - 1),
+    );
+  }
+
+  function addMedication(index: number) {
+    const p = members[index];
+    updatePerson(index, {
+      medications: [...p.medications, { id: newId('med'), name: '', dosePerDay: null }],
+    });
+  }
+
+  function updateMedication(index: number, medIndex: number, patch: Partial<Medication>) {
+    const p = members[index];
+    updatePerson(index, {
+      medications: p.medications.map((m, j) => (j === medIndex ? { ...m, ...patch } : m)),
+    });
+  }
+
+  function removeMedication(index: number, medIndex: number) {
+    const p = members[index];
+    updatePerson(index, { medications: p.medications.filter((_, j) => j !== medIndex) });
+  }
 </script>
 
 {#if part === 'household'}
@@ -75,12 +139,156 @@
         <Stepper
           label="People"
           value={s.people}
-          min={1}
+          min={Math.max(1, members.length)}
           max={10}
           onchange={(v) => store.updateSettings({ people: v })}
         />
       </div>
+      <p class="muted small flush">
+        Name each person (optional) to record their age and any medicines they depend on. The Medicines tile
+        on the dashboard then shows the stock of each one.
+      </p>
+      {#each members as person, i (person.id)}
+        <div class="person" data-testid="person-{i}">
+          <div class="person-top">
+            <label class="grow">
+              <span>Name</span>
+              <input
+                value={person.name}
+                onchange={(e) => updatePerson(i, { name: e.currentTarget.value.trim() || person.name })}
+              />
+            </label>
+            <label class="age">
+              <span>Age</span>
+              <input
+                type="number"
+                inputmode="numeric"
+                min="0"
+                max="120"
+                value={person.age ?? ''}
+                onchange={(e) =>
+                  updatePerson(i, {
+                    age: e.currentTarget.value === '' ? null : num(e.currentTarget.value, 0),
+                  })}
+              />
+            </label>
+            <button class="remove" aria-label="Remove {person.name}" onclick={() => removePerson(i)}
+              >Remove</button
+            >
+          </div>
+          {#each person.medications as med, j (med.id)}
+            <div class="med">
+              <label class="grow">
+                <span>Medicine</span>
+                <input
+                  value={med.name}
+                  placeholder="e.g. Levothyroxine 50 mcg"
+                  onchange={(e) => updateMedication(i, j, { name: e.currentTarget.value.trim() })}
+                />
+              </label>
+              <label class="dose">
+                <span>A day</span>
+                <input
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  step="any"
+                  value={med.dosePerDay ?? ''}
+                  aria-label="{med.name || 'Medicine'} doses a day"
+                  onchange={(e) =>
+                    updateMedication(i, j, {
+                      dosePerDay: e.currentTarget.value === '' ? null : num(e.currentTarget.value, 0),
+                    })}
+                />
+              </label>
+              <label class="grow">
+                <span>Inventory item</span>
+                <select
+                  value={med.itemId ?? ''}
+                  aria-label="{med.name || 'Medicine'} inventory item"
+                  onchange={(e) => updateMedication(i, j, { itemId: e.currentTarget.value || null })}
+                >
+                  <option value="">Not linked</option>
+                  {#each medItems as item (item._id)}<option value={item._id}>{item.name}</option>{/each}
+                </select>
+              </label>
+              <button
+                class="remove"
+                aria-label="Remove {med.name || 'medicine'}"
+                onclick={() => removeMedication(i, j)}>✕</button
+              >
+            </div>
+          {/each}
+          <button class="link" onclick={() => addMedication(i)}>+ Add a medicine for {person.name}</button>
+        </div>
+      {/each}
+      <button onclick={addPerson}>+ Add person</button>
     </div>
+  </section>
+
+  <section aria-labelledby="needs-heading">
+    <h2 id="needs-heading">Daily needs per person</h2>
+    <div class="card needs">
+      <label>
+        <span>Water (L)</span>
+        <input
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.5"
+          value={s.dailyNeeds.waterLPerPerson}
+          onchange={(e) =>
+            updateNeeds({ waterLPerPerson: num(e.currentTarget.value, s.dailyNeeds.waterLPerPerson) })}
+        />
+      </label>
+      <label>
+        <span>Calories (kcal)</span>
+        <input
+          type="number"
+          inputmode="numeric"
+          min="0"
+          step="100"
+          value={s.dailyNeeds.kcalPerPerson}
+          onchange={(e) =>
+            updateNeeds({ kcalPerPerson: num(e.currentTarget.value, s.dailyNeeds.kcalPerPerson) })}
+        />
+      </label>
+      <label>
+        <span>Cooking gas (g)</span>
+        <input
+          type="number"
+          inputmode="numeric"
+          min="0"
+          value={s.dailyNeeds.gasGPerPerson}
+          onchange={(e) =>
+            updateNeeds({ gasGPerPerson: num(e.currentTarget.value, s.dailyNeeds.gasGPerPerson) })}
+        />
+      </label>
+    </div>
+    <p class="muted small">77 g of gas per person is one 230 g canister a day for three people.</p>
+  </section>
+
+  <section aria-labelledby="meals-heading">
+    <h2 id="meals-heading">Meals per person per day</h2>
+    <div class="card needs meals">
+      {#each MEAL_TYPES as m (m.id)}
+        <label>
+          <span>{m.label}</span>
+          <input
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.5"
+            value={mealsPerDay(s, m.id)}
+            onchange={(e) => setMeals(m.id, e.currentTarget.value)}
+          />
+        </label>
+      {/each}
+    </div>
+    <p class="muted small">
+      Targets for the Food box on the Checklist: people × days × meals a day, e.g. 3 people for 3 days with 1
+      breakfast a day is 9 breakfasts.
+    </p>
   </section>
 {:else}
   <section aria-labelledby="target-heading">
@@ -230,50 +438,6 @@
   </section>
 {/if}
 
-{#if part === 'household'}
-  <section aria-labelledby="needs-heading">
-    <h2 id="needs-heading">Daily needs per person</h2>
-    <div class="card needs">
-      <label>
-        <span>Water (L)</span>
-        <input
-          type="number"
-          inputmode="decimal"
-          min="0"
-          step="0.5"
-          value={s.dailyNeeds.waterLPerPerson}
-          onchange={(e) =>
-            updateNeeds({ waterLPerPerson: num(e.currentTarget.value, s.dailyNeeds.waterLPerPerson) })}
-        />
-      </label>
-      <label>
-        <span>Calories (kcal)</span>
-        <input
-          type="number"
-          inputmode="numeric"
-          min="0"
-          step="100"
-          value={s.dailyNeeds.kcalPerPerson}
-          onchange={(e) =>
-            updateNeeds({ kcalPerPerson: num(e.currentTarget.value, s.dailyNeeds.kcalPerPerson) })}
-        />
-      </label>
-      <label>
-        <span>Cooking gas (g)</span>
-        <input
-          type="number"
-          inputmode="numeric"
-          min="0"
-          value={s.dailyNeeds.gasGPerPerson}
-          onchange={(e) =>
-            updateNeeds({ gasGPerPerson: num(e.currentTarget.value, s.dailyNeeds.gasGPerPerson) })}
-        />
-      </label>
-    </div>
-    <p class="muted small">77 g of gas per person is one 230 g canister a day for three people.</p>
-  </section>
-{/if}
-
 <style>
   fieldset {
     border: 0;
@@ -397,6 +561,57 @@
 
   .remove {
     color: var(--bad);
+  }
+
+  .flush {
+    margin: 0;
+  }
+
+  .person {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .person-top,
+  .med {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.5rem;
+  }
+
+  .grow {
+    flex: 1 1 10rem;
+  }
+
+  .age,
+  .dose {
+    flex: 0 0 5rem;
+  }
+
+  .med {
+    padding-left: 0.75rem;
+    border-left: 3px solid var(--surface-2);
+  }
+
+  .med .remove {
+    width: 44px;
+    padding: 0;
+  }
+
+  .link {
+    justify-self: start;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font-weight: 600;
+    padding: 0;
+  }
+
+  .meals {
+    grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
   }
 
   .small {

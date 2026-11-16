@@ -12,7 +12,7 @@ const snap = snapshotFromDocs(seedJson as AnyDoc[]);
 const readiness = computeReadiness(snap, TODAY);
 
 describe('shopping list', () => {
-  const list = buildShoppingList(snap, readiness);
+  const list = buildShoppingList(snap, readiness, TODAY);
 
   it('gathers shortfalls, Need lines and planned purchases', () => {
     expect(list.shortfalls.map((s) => s.label)).toEqual([
@@ -20,12 +20,14 @@ describe('shopping list', () => {
       'Food calories',
       'Pet food',
       'Cooking fuel',
+      'Lighting',
     ]);
     expect(list.shortfalls[0].amount).toBe('42 L');
-    expect(list.need).toHaveLength(52);
+    expect(list.need).toHaveLength(49); // 52 less the three meal lines the Food box replaces
     expect(list.check).toHaveLength(6); // gas, dry fuel, paraffin, first aid, prescriptions, warm layers
     expect(list.toBuy).toHaveLength(24);
-    expect(shoppingCount(list)).toBe(4 + 52 + 24);
+    expect(list.meals.map((m) => m.label)).toContain('Breakfasts');
+    expect(shoppingCount(list)).toBe(5 + list.meals.length + 49 + 24);
   });
 
   it('writes plain text for the share sheet', () => {
@@ -33,7 +35,8 @@ describe('shopping list', () => {
     expect(text).toContain('PrepApp shopping list – 16 Nov 2026');
     expect(text).toContain('- Water: 42 L more');
     expect(text).toContain('- Head torches – 3 per person');
-    expect(text).toContain('Planned food:');
+    expect(text).toContain('On the shopping list:');
+    expect(text).toContain('Meals to reach the target:');
     expect(text).toContain('To check at home:');
   });
 });

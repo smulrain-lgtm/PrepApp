@@ -60,7 +60,7 @@ test('a typed barcode fills in the product from Open Food Facts, with calories f
   await expect(label.getByRole('spinbutton', { name: 'Pack size' })).toHaveValue('1500');
   await expect(label.getByRole('spinbutton', { name: 'Protein per 100 g' })).toHaveValue('10');
   await expect(label.getByRole('spinbutton', { name: 'Salt per 100 g' })).toHaveValue('0');
-  await expect(sheet.getByTestId('label-kcal')).toContainText('5,115 kcal per pack');
+  await expect(sheet.getByTestId('label-kcal')).toContainText('5,115 kcal per bag');
   for (const colorScheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme });
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
@@ -101,7 +101,7 @@ test('sub-categories are edited in Settings and filter the inventory', async ({ 
   const sheet = page.getByRole('dialog', { name: 'Food – Desserts' });
   await sheet.getByTestId('sub-0').fill('Puddings');
   await sheet.getByTestId('new-sub').fill('Custard');
-  await sheet.getByRole('button', { name: 'Add', exact: true }).click();
+  await sheet.getByRole('button', { name: 'Add sub-category' }).click();
   await sheet.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByText('Saved Food – Desserts.')).toBeVisible();
 

@@ -16,7 +16,7 @@ import {
   summariseChecklist,
   type ReadinessInput,
 } from './readiness';
-import type { AnyDoc, Batch, Item, Movement, Settings } from './model/types';
+import type { AnyDoc, Batch, Item, Metric, Movement, Settings } from './model/types';
 
 const TODAY = '2026-11-15';
 const seed = snapshotFromDocs(seedJson as AnyDoc[]);
@@ -317,9 +317,13 @@ describe('release 1.1 rules', () => {
     expect(metric(bag, 'fuel_g').critical).toBe(false);
   });
 
-  it('scenarios: a power cut makes lighting count', () => {
-    const r = computeReadiness({ ...input(), settings: applyScenario(input().settings, 'power_cut') }, TODAY);
-    expect(metric(r, 'light_days').critical).toBe(true);
+  it('scenarios: power counts at home (lighting is critical), not in the go bag', () => {
+    const home = computeReadiness({ ...input(), settings: applyScenario(input().settings, 'home') }, TODAY);
+    expect(metric(home, 'light_days').critical).toBe(true);
+    const old = { ...input().settings, criticalMetrics: ['water_l', 'kcal'] as Metric[] };
+    expect(applyScenario(old, 'home').criticalMetrics).toContain('light_days');
+    expect(applyScenario(old, 'garage_lost').criticalMetrics).toContain('light_days');
+    expect(applyScenario(old, 'go_bag').criticalMetrics).not.toContain('light_days');
   });
 });
 

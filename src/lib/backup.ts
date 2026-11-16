@@ -26,6 +26,7 @@ const DOC_TYPES: DocType[] = [
   'contact',
   'infoNote',
   'purchase',
+  'list',
 ];
 
 export function stripRevs(docs: AnyDoc[]): AnyDoc[] {

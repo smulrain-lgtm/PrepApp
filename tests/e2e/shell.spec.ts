@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-test('shows the five areas and switches between them', async ({ page }) => {
+test('shows the seven areas and switches between them', async ({ page }) => {
   await page.goto('./');
   const nav = page.getByRole('navigation', { name: 'Main' });
-  for (const label of ['Dashboard', 'Inventory', 'Checklist', 'Info', 'Settings']) {
+  for (const label of ['Dashboard', 'Inventory', 'Lists', 'Rotation', 'Checklist', 'Info', 'Settings']) {
     await expect(nav.getByRole('button', { name: label })).toBeVisible();
   }
   await nav.getByRole('button', { name: 'Settings' }).click();

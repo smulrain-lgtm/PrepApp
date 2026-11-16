@@ -1,19 +1,19 @@
 /**
  * Scenarios: the same store judged for a different situation. They change how
  * the figure is worked out for viewing only; the saved settings are untouched.
- * Our water already counts stored water only (taps assumed off), so there is no
- * separate "no water" scenario; "garage lost" covers this household's main risk.
+ * Our water already counts stored water only (taps assumed off) and Home
+ * already assumes no mains power, so there is no "no water" or "power cut"
+ * scenario; "garage lost" covers this household's main risk.
  */
 import type { Settings } from './model/types';
 
-export type Scenario = 'home' | 'power_cut' | 'garage_lost' | 'go_bag';
+export type Scenario = 'home' | 'garage_lost' | 'go_bag';
 
 export const SCENARIOS: { id: Scenario; label: string; description: string }[] = [
-  { id: 'home', label: 'Home', description: 'Staying at home, with the settings as you set them.' },
   {
-    id: 'power_cut',
-    label: 'Power cut',
-    description: 'No mains power: lighting counts too, alongside water, food and cooking gas.',
+    id: 'home',
+    label: 'Home',
+    description: 'Staying at home without mains power: water, food, cooking gas and lighting all count.',
   },
   {
     id: 'garage_lost',
@@ -31,14 +31,9 @@ export const SCENARIOS: { id: Scenario; label: string; description: string }[] =
 export function applyScenario(settings: Settings, scenario: Scenario): Settings {
   switch (scenario) {
     case 'home':
-      return settings;
-    case 'power_cut':
-      return {
-        ...settings,
-        criticalMetrics: [...new Set([...settings.criticalMetrics, 'light_days' as const])],
-      };
+      return withPower(settings);
     case 'garage_lost':
-      return { ...settings, indoorOnly: true };
+      return { ...withPower(settings), indoorOnly: true };
     case 'go_bag':
       return {
         ...settings,
@@ -49,6 +44,15 @@ export function applyScenario(settings: Settings, scenario: Scenario): Settings 
         criticalMetrics: ['water_l', 'kcal', 'pet_food_g'],
       };
   }
+}
+
+/**
+ * Power is a home requirement (1.3 folded the old Power cut scenario into
+ * Home): lighting always counts, even on records saved before it did.
+ */
+export function withPower(settings: Settings): Settings {
+  if (settings.criticalMetrics.includes('light_days')) return settings;
+  return { ...settings, criticalMetrics: [...settings.criticalMetrics, 'light_days'] };
 }
 
 const KEY = 'prepapp.scenario';

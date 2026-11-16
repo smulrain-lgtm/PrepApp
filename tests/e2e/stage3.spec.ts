@@ -26,20 +26,20 @@ test('checklist targets scale with the scenario', async ({ page }) => {
   await page.getByRole('button', { name: 'Increase People' }).click();
   await nav(page, 'Checklist');
   await expect(water).toContainText('Target 66 L');
-  await expect(page.getByTestId('line-checklist:05-backpacking-meals-lunch-dinner')).toContainText(
-    '30 meals',
-  );
+  // Meals are counted from the inventory in the Food box: 5 people × 3 days × 2 main meals.
+  await expect(page.getByTestId('meal-main')).toContainText('of 30');
+  await expect(page.getByTestId('meal-breakfast')).toContainText('of 15');
 });
 
 test('status cycles Need → Check → Have and counts update', async ({ page }) => {
   await nav(page, 'Checklist');
-  await expect(page.getByText('10 of 68 marked Have.')).toBeVisible();
+  await expect(page.getByText('10 of 65 marked Have.')).toBeVisible();
   const status = page.getByRole('button', { name: /^Whistle: Need/ });
   await status.click();
   await expect(page.getByRole('button', { name: /^Whistle: Check/ })).toBeVisible();
   await page.getByRole('button', { name: /^Whistle: Check/ }).click();
   await expect(page.getByRole('button', { name: /^Whistle: Have/ })).toBeVisible();
-  await expect(page.getByText('11 of 68 marked Have.')).toBeVisible();
+  await expect(page.getByText('11 of 65 marked Have.')).toBeVisible();
 });
 
 test('recurring checks: "Checked today" clears the due flag', async ({ page }) => {

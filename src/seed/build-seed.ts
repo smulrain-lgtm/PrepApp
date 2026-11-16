@@ -7,6 +7,7 @@
 import {
   DEFAULT_KCAL,
   DEFAULT_SETTINGS,
+  BUILT_IN_LISTS,
   INGREDIENTS_CATEGORY,
   SUSPECT_DATE_BEFORE,
 } from '../lib/model/constants.ts';
@@ -209,6 +210,7 @@ export function buildSeed(sources: SeedSources): AnyDoc[] {
     docs.push(category);
   });
   docs.push({ ...INGREDIENTS_CATEGORY });
+  for (const list of BUILT_IN_LISTS) docs.push({ ...list });
 
   // Food Store: one row per pack. Same product = one item; same product + date = one batch.
   const packs = tableAfter(parseCsv(sources.foodStoreCsv), 'Item');

@@ -14,6 +14,7 @@ export function snapshotFromDocs(docs: AnyDoc[]): Snapshot {
     contacts: [],
     infoNotes: [],
     purchases: [],
+    lists: [],
   };
   for (const doc of docs) {
     switch (doc.type) {
@@ -47,6 +48,9 @@ export function snapshotFromDocs(docs: AnyDoc[]): Snapshot {
       case 'purchase':
         snap.purchases.push(doc);
         break;
+      case 'list':
+        snap.lists.push(doc);
+        break;
     }
   }
   const byOrder = <T extends { order: number }>(a: T, b: T) => a.order - b.order;
@@ -54,6 +58,7 @@ export function snapshotFromDocs(docs: AnyDoc[]): Snapshot {
   snap.checklistSections.sort(byOrder);
   snap.checklistItems.sort(byOrder);
   snap.purchases.sort(byOrder);
+  snap.lists.sort(byOrder);
   snap.contacts.sort((a, b) => a.priority - b.priority);
   return snap;
 }
