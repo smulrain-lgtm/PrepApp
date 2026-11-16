@@ -2,9 +2,8 @@
   import ChecklistSheet from './ChecklistSheet.svelte';
   import CollapseButton from '../components/CollapseButton.svelte';
   import { Collapsed } from '../lib/collapse.svelte';
-  import { FOOD_SECTION_ID } from '../lib/model/constants';
   import { formatNumber } from '../lib/format';
-  import { mealCounts } from '../lib/stock-links';
+  import { mealCounts, waterBox } from '../lib/stock-links';
   import {
     groupChecklist,
     isCheckDue,
@@ -21,23 +20,28 @@
     { value: 'check', label: 'Check' },
     { value: 'have', label: 'Have' },
     { value: 'due', label: 'Checks due' },
+    { value: 'essential', label: 'Essential' },
   ];
 
+  let { params }: { params: URLSearchParams } = $props();
   let filter = $state<ChecklistFilter>('all');
+  // The dashboard's Essentials tile opens this screen with ?filter=essential.
+  $effect(() => {
+    const wanted = params.get('filter') as ChecklistFilter | null;
+    if (wanted && FILTERS.some((f) => f.value === wanted)) filter = wanted;
+  });
   const snap = $derived(store.snapshot!);
   const summary = $derived(store.checklist!);
   const resolved = $derived(store.resolvedChecklist!);
-  const groups = $derived(
-    groupChecklist(
-      snap.checklistSections,
-      resolved.lines,
-      filter,
-      store.today,
-      filter === 'all' ? [FOOD_SECTION_ID] : [],
-    ),
-  );
+  const groups = $derived(groupChecklist(snap.checklistSections, resolved.lines, filter, store.today));
   const meals = $derived(mealCounts(snap, snap.settings, store.today));
-  const mealsMet = $derived(meals.filter((m) => m.count >= m.target).length);
+  const water = $derived.by(() => {
+    const m = store.readiness!.metrics.find((x) => x.metric === 'water_l')!;
+    return waterBox(m.stock, m.dailyDemand, snap.settings.targetDays);
+  });
+  const boxesMet = $derived(
+    meals.filter((m) => m.count >= m.target).length + (water.have >= water.target ? 1 : 0),
+  );
 
   const collapsed = new Collapsed('checklist');
   const sectionIds = $derived(groups.map((g) => g.section._id));
@@ -96,9 +100,42 @@
   {/each}
 </div>
 
+<section class="boxes" aria-labelledby="boxes-heading" data-testid="meal-box">
+  <h2 id="boxes-heading" class="visually-hidden">Water and meals</h2>
+  <p class="muted small boxes-intro">
+    Water and meals in the inventory against {snap.settings.people}
+    {snap.settings.people === 1 ? 'person' : 'people'} × {snap.settings.targetDays} days ({boxesMet} of {meals.length +
+      1}
+    at target).
+  </p>
+  <ul class="meal-tiles">
+    <li class="meal {water.band}" data-testid="meal-water">
+      <span class="meal-name">Water</span>
+      <span class="meal-value"
+        ><strong>{formatNumber(water.have)}</strong> of {formatNumber(water.target)} L</span
+      >
+      <span class="meal-detail"
+        >{water.have >= water.target
+          ? 'Target reached'
+          : `${formatNumber(water.target - water.have)} L more needed`} · {formatNumber(water.perDay)} L a day</span
+      >
+    </li>
+    {#each meals as m (m.type)}
+      <li class="meal {m.band}" data-testid="meal-{m.type}">
+        <span class="meal-name">{m.label}</span>
+        <span class="meal-value"><strong>{m.count}</strong> of {m.target}</span>
+        <span class="meal-detail"
+          >{m.count >= m.target ? 'Target reached' : `${m.target - m.count} more needed`} · {formatNumber(
+            m.perDay,
+          )} a day each</span
+        >
+      </li>
+    {/each}
+  </ul>
+</section>
+
 {#each groups as group (group.section._id)}
   {@const sid = group.section._id}
-  {@const isFood = sid === FOOD_SECTION_ID}
   <section aria-labelledby="sec-{sid}">
     <div class="sec-head">
       <CollapseButton
@@ -117,29 +154,6 @@
     </div>
     {#if collapsed.isOpen(sid)}
       <div id="lines-{sid}">
-        {#if isFood && filter === 'all'}
-          <div class="meals" data-testid="meal-box">
-            <p class="muted small meals-intro">
-              Meals in the inventory against {snap.settings.people}
-              {snap.settings.people === 1 ? 'person' : 'people'} × {snap.settings.targetDays} days ({mealsMet} of
-              {meals.length}
-              at target).
-            </p>
-            <ul class="meal-tiles">
-              {#each meals as m (m.type)}
-                <li class="meal {m.band}" data-testid="meal-{m.type}">
-                  <span class="meal-name">{m.label}</span>
-                  <span class="meal-value"><strong>{m.count}</strong> of {m.target}</span>
-                  <span class="meal-detail"
-                    >{m.count >= m.target ? 'Target reached' : `${m.target - m.count} more needed`} · {formatNumber(
-                      m.perDay,
-                    )} a day each</span
-                  >
-                </li>
-              {/each}
-            </ul>
-          </div>
-        {/if}
         {#if group.lines.length}
           <ul class="card list">
             {#each group.lines as line (line._id)}
@@ -147,7 +161,9 @@
               {@const link = resolved.links.get(line._id)}
               <li data-testid="line-{line._id}">
                 <button class="main" onclick={() => open(line._id)}>
-                  <span class="name">{line.name}</span>
+                  <span class="name"
+                    >{line.name}{#if line.essential}<span class="essential">Essential</span>{/if}</span
+                  >
                   <span class="meta muted">
                     Target {targetText(line, snap.settings)}
                     {#if link}· <span class="linked">In stock {formatNumber(link.amount)}</span>{/if}
@@ -246,12 +262,26 @@
     font-weight: 600;
   }
 
-  .meals {
-    margin-bottom: 0.75rem;
+  .boxes {
+    margin: 0.25rem 0 0.75rem;
   }
 
-  .meals-intro {
+  .boxes-intro {
     margin: 0 0 0.5rem;
+  }
+
+  .essential {
+    display: inline-block;
+    margin-left: 0.4rem;
+    padding: 0 6px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    vertical-align: middle;
+    background: var(--accent);
+    color: var(--accent-contrast);
   }
 
   .meal-tiles {

@@ -44,14 +44,14 @@
   const toBuy = $derived(entries.filter((e) => e.status === 'to_buy'));
   const bought = $derived(entries.filter((e) => e.status === 'bought'));
   const groups = $derived(groupEntries(toBuy));
-  const shopping = $derived(buildShoppingList(snap, store.readiness!, store.today));
+  const shopping = $derived(buildShoppingList(snap));
   const isShopping = $derived(list?.kind === 'shopping');
 
   const collapsed = new Collapsed('lists');
   const groupKey = (name: string) => `${list?._id}:${name}`;
   const allKeys = $derived([
     ...groups.map((g) => groupKey(g.category)),
-    ...(isShopping ? ['target', 'need', 'check'].map(groupKey) : []),
+    ...(isShopping && shopping.check.length ? [groupKey('check')] : []),
   ]);
 
   // --- Lists: new, rename, delete -------------------------------------------------
@@ -159,9 +159,7 @@
 
   async function share() {
     if (!list) return;
-    const text = isShopping
-      ? shoppingText(shopping, store.today, snap.settings.targetDays)
-      : listText(list, entries);
+    const text = isShopping ? shoppingText(shopping, store.today) : listText(list, entries);
     try {
       if (navigator.share) {
         await navigator.share({ title: list.name, text });
@@ -172,14 +170,6 @@
     } catch (error) {
       if ((error as Error).name !== 'AbortError') store.notify('Could not share the list.');
     }
-  }
-
-  /** "To reach the target": readiness shortfalls, then meals short of the Food box. */
-  function shortRows() {
-    return [
-      ...shopping.shortfalls.map((s) => ({ key: s.label, label: s.label, value: `${s.amount} more` })),
-      ...shopping.meals.map((m) => ({ key: `meal-${m.label}`, label: m.label, value: `${m.more} more` })),
-    ];
   }
 
   const countFor = (l: ListDoc) => entriesOn(snap, l._id).filter((e) => e.status === 'to_buy').length;
@@ -219,8 +209,8 @@
   <div class="list-head">
     <p class="muted">
       {#if isShopping}
-        What to buy to reach {snap.settings.targetDays} days for {snap.settings.people} people, plus anything you
-        add.
+        Things to buy. Tap <strong>Purchased</strong> to add one to the inventory; lines marked Check on the checklist
+        are listed too.
       {:else if list._id === RECENT_LIST_ID}
         Packs used from the Rotation screen. Tap <strong>Purchased</strong> when you have replaced one.
       {:else}
@@ -241,16 +231,6 @@
   </div>
 
   {#if isShopping}
-    {#if shopping.shortfalls.length || shopping.meals.length}
-      {@render computed('target', 'To reach the target', shortRows())}
-    {/if}
-    {#if shopping.need.length}
-      {@render computed(
-        'need',
-        `Equipment and supplies needed (${shopping.need.length})`,
-        shopping.need.map((n) => ({ key: n.line._id, label: n.line.name, sub: n.section, value: n.target })),
-      )}
-    {/if}
     {#if shopping.check.length}
       {@render computed(
         'check',

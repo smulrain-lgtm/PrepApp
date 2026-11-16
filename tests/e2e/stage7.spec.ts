@@ -180,3 +180,39 @@ test('household: named people with a medicine shown on the dashboard', async ({ 
   await page.goto('./#/dashboard');
   await expect(page.getByTestId('med-cover')).toContainText('Sam: Levothyroxine 50 mcg – 20 packs, 20 days');
 });
+
+test('1.3.1: water and meal boxes sit above the sections; Essential lines feed the dashboard', async ({
+  page,
+}) => {
+  await page.goto('./#/checklist');
+  // The boxes come straight after the filters, before the first section.
+  const boxes = page.getByTestId('meal-box');
+  await expect(boxes.getByTestId('meal-water')).toContainText('0 of 42 L');
+  await expect(boxes.getByTestId('meal-breakfast')).toContainText('of 9');
+  const boxTop = (await boxes.boundingBox())!.y;
+  const firstSection = (await page.locator('section[aria-labelledby="sec-section:water"]').boundingBox())!.y;
+  expect(boxTop).toBeLessThan(firstSection);
+  await page.getByRole('button', { name: 'Hide Food' }).click();
+  await expect(boxes).toBeVisible(); // not inside the Food section
+
+  // Tick two lines Essential; one is Have.
+  for (const name of ['Whistle', 'Water filter + purification tablets']) {
+    await page
+      .getByRole('button', { name: new RegExp(`^${name.replace(/[+]/g, '\\+')}`) })
+      .first()
+      .click();
+    const sheet = page.getByRole('dialog', { name });
+    await sheet.getByTestId('line-essential').check();
+    await sheet.getByRole('button', { name: 'Save changes' }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
+  }
+  await page.getByRole('button', { name: 'Essential', exact: true }).click();
+  await expect(page.locator('[data-testid^="line-"]')).toHaveCount(2);
+
+  await page.goto('./#/dashboard');
+  const tile = page.getByTestId('tile-essentials');
+  await expect(tile).toContainText('1 of 2');
+  await expect(tile).toContainText('Need: Whistle');
+  await tile.click();
+  await expect(page.getByRole('button', { name: 'Essential', exact: true, pressed: true })).toBeVisible();
+});

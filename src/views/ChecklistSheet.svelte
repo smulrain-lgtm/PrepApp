@@ -37,6 +37,7 @@
     notes: string;
     checkIntervalDays: number | null;
     itemIds: string[];
+    essential: boolean;
   }
 
   let form = $state<Form>(blank());
@@ -53,6 +54,7 @@
       notes: '',
       checkIntervalDays: null,
       itemIds: [],
+      essential: false,
     };
   }
 
@@ -75,6 +77,7 @@
           notes: l.notes ?? '',
           checkIntervalDays: l.checkIntervalDays ?? null,
           itemIds: [...(l.itemIds ?? [])],
+          essential: !!l.essential,
         }
       : blank();
     linkPick = '';
@@ -143,6 +146,7 @@
       notes: form.notes.trim() || undefined,
       checkIntervalDays: form.checkIntervalDays,
       itemIds: form.itemIds.length ? [...form.itemIds] : undefined,
+      essential: form.essential || undefined,
     };
     // A linked line keeps the status its stock gives.
     if (linkStatus) doc.status = linkStatus;
@@ -248,6 +252,11 @@
       </fieldset>
     {/if}
 
+    <label class="tick">
+      <input type="checkbox" bind:checked={form.essential} data-testid="line-essential" />
+      <span>Essential <span class="muted hint">(counted on the dashboard's Essentials tile)</span></span>
+    </label>
+
     <label>
       <span>Name</span>
       <input bind:value={form.name} required />
@@ -334,7 +343,7 @@
     font-weight: 600;
   }
 
-  input:not([type='radio']),
+  input:not([type='radio']):not([type='checkbox']),
   select,
   textarea {
     width: 100%;
@@ -420,6 +429,25 @@
 
   .danger {
     color: var(--bad);
+  }
+
+  .tick {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+  }
+
+  .tick input {
+    width: 22px;
+    height: 22px;
+    min-height: 0;
+    flex: none;
+  }
+
+  .hint {
+    font-weight: 400;
+    font-size: 0.85rem;
   }
 
   .set-by {

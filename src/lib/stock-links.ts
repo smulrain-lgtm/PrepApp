@@ -89,6 +89,40 @@ export function resolveChecklist(snap: Snapshot): { lines: ChecklistItem[]; link
   return { lines, links };
 }
 
+// --- Essentials -----------------------------------------------------------------------
+
+export interface EssentialsSummary {
+  have: number;
+  total: number;
+  /** Essential lines not yet Have, in checklist order. */
+  missing: ChecklistItem[];
+}
+
+/** Checklist lines ticked Essential: how many are Have (pass resolved lines). */
+export function essentialsSummary(lines: ChecklistItem[]): EssentialsSummary {
+  const essential = lines.filter((l) => l.essential && !l.deleted);
+  const missing = essential.filter((l) => l.status !== 'have');
+  return { have: essential.length - missing.length, total: essential.length, missing };
+}
+
+// --- Water box -------------------------------------------------------------------------
+
+export interface WaterBox {
+  /** Usable stored water, litres. */
+  have: number;
+  /** Litres for everyone (people and pets) for the target days. */
+  target: number;
+  perDay: number;
+  band: Band;
+}
+
+/** Stored water against the target, from the readiness water figures. */
+export function waterBox(stock: number, dailyDemand: number, targetDays: number): WaterBox {
+  const target = Math.ceil(dailyDemand * targetDays);
+  const band: Band = stock >= target ? 'green' : stock >= target / 2 ? 'amber' : 'red';
+  return { have: stock, target, perDay: dailyDemand, band };
+}
+
 // --- Food box ------------------------------------------------------------------------
 
 export interface MealCount {

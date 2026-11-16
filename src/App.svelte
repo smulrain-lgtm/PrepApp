@@ -104,7 +104,7 @@
     {:else if active === 'rotation'}
       <Rotation />
     {:else if active === 'checklist'}
-      <Checklist />
+      <Checklist params={route.params} />
     {:else if active === 'info'}
       <Info params={route.params} />
     {:else}

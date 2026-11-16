@@ -3,41 +3,31 @@ import seedJson from '../seed/seed.json';
 import { csvCell, inventoryCsv } from './inventory-csv';
 import { snapshotFromDocs } from './model/snapshot';
 import type { AnyDoc } from './model/types';
-import { computeReadiness } from './readiness';
 import { rotationRows } from './rotation';
 import { buildShoppingList, shoppingCount, shoppingText } from './shopping';
 
 const TODAY = '2026-11-16';
 const snap = snapshotFromDocs(seedJson as AnyDoc[]);
-const readiness = computeReadiness(snap, TODAY);
 
 describe('shopping list', () => {
-  const list = buildShoppingList(snap, readiness, TODAY);
+  const list = buildShoppingList(snap);
 
-  it('gathers shortfalls, Need lines and planned purchases', () => {
-    expect(list.shortfalls.map((s) => s.label)).toEqual([
-      'Water',
-      'Food calories',
-      'Pet food',
-      'Cooking fuel',
-      'Lighting',
-    ]);
-    expect(list.shortfalls[0].amount).toBe('42 L');
-    expect(list.need).toHaveLength(49); // 52 less the three meal lines the Food box replaces
+  it('holds the household’s entries and the Check lines, not shortfalls or Need lines', () => {
     expect(list.check).toHaveLength(6); // gas, dry fuel, paraffin, first aid, prescriptions, warm layers
     expect(list.toBuy).toHaveLength(24);
-    expect(list.meals.map((m) => m.label)).toContain('Breakfasts');
-    expect(shoppingCount(list)).toBe(5 + list.meals.length + 49 + 24);
+    expect(list).not.toHaveProperty('shortfalls');
+    expect(list).not.toHaveProperty('need');
+    expect(shoppingCount(list)).toBe(24);
   });
 
   it('writes plain text for the share sheet', () => {
-    const text = shoppingText(list, TODAY, 3);
+    const text = shoppingText(list, TODAY);
     expect(text).toContain('PrepApp shopping list – 16 Nov 2026');
-    expect(text).toContain('- Water: 42 L more');
-    expect(text).toContain('- Head torches – 3 per person');
     expect(text).toContain('On the shopping list:');
-    expect(text).toContain('Meals to reach the target:');
+    expect(text).toContain('- Rolled porridge oats');
     expect(text).toContain('To check at home:');
+    expect(text).not.toContain('42 L more');
+    expect(text).not.toContain('Head torches');
   });
 });
 

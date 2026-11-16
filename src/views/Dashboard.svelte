@@ -7,7 +7,7 @@
   import { computeReadiness, medicineEssentials, pastDateRule, type Band } from '../lib/readiness';
   import { applyScenario, loadScenario, saveScenario, SCENARIOS, type Scenario } from '../lib/scenario';
   import { buildShoppingList, shoppingCount } from '../lib/shopping';
-  import { medicationCover } from '../lib/stock-links';
+  import { essentialsSummary, medicationCover } from '../lib/stock-links';
   import { store } from '../lib/store.svelte';
 
   const snap = $derived(store.snapshot!);
@@ -31,6 +31,7 @@
   const limitingLabel = $derived(METRIC_INFO.find((m) => m.id === r.limiting)?.label);
   const essentials = $derived(medicineEssentials(store.resolvedChecklist!.lines, MEDICINE_ESSENTIALS));
   const meds = $derived(medicationCover(snap, r.targetDays));
+  const essentialLines = $derived(essentialsSummary(store.resolvedChecklist!.lines));
 
   function medText(m: (typeof meds)[number]): string {
     const name = m.medication.name || 'Medicine';
@@ -64,6 +65,7 @@
     fuel_g: 'M12 3c1 4 5 6 5 11a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 5',
     light_days: 'M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z',
     med: 'M9 4h6v5h5v6h-5v5H9v-5H4V9h5z',
+    essential: 'M12 3l2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.1-5.4 3.1 1.3-6L3.3 9.2l6.1-.6z',
   };
 
   // "Why did my number go down?" — compared with what this device last showed (Home only).
@@ -96,7 +98,7 @@
 
   const checklist = $derived(store.checklist!);
   const checklistPct = $derived(checklist.total ? Math.round((checklist.have / checklist.total) * 100) : 0);
-  const shopping = $derived(buildShoppingList(snap, home, store.today));
+  const shopping = $derived(buildShoppingList(snap));
   const dueChecks = $derived(checklist.dueChecks);
 
   const expiryTiles = $derived([
@@ -190,6 +192,43 @@
           </span>
         </li>
       {/each}
+      <li class="cat essential" data-testid="tile-essentials">
+        <a href="#/checklist?filter=essential">
+          <div class="cat-head">
+            <span class="name">Essentials</span>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path
+                d={ICON.essential}
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          {#if essentialLines.total}
+            <span class="value"><strong>{essentialLines.have}</strong> of {essentialLines.total}</span>
+            <span class="status"
+              >{essentialLines.missing.length
+                ? `${essentialLines.missing.length} still needed`
+                : 'All essentials in'}</span
+            >
+            {#if essentialLines.missing.length}
+              <span class="detail"
+                >Need: {essentialLines.missing
+                  .slice(0, 4)
+                  .map((l) => l.name)
+                  .join(', ')}{essentialLines.missing.length > 4
+                  ? ` and ${essentialLines.missing.length - 4} more`
+                  : ''}</span
+              >
+            {/if}
+          {:else}
+            <span class="value"><strong>0</strong> marked</span>
+            <span class="detail">Tick Essential on checklist lines to count them here.</span>
+          {/if}
+        </a>
+      </li>
       <li class="cat med" data-testid="tile-medicine">
         <a href="#/checklist">
           <div class="cat-head">
@@ -246,11 +285,8 @@
   <section aria-labelledby="shopping-heading">
     <h2 id="shopping-heading">Shopping list</h2>
     <a class="card link-card" href="#/lists" data-testid="shopping-card">
-      <span><strong>{shoppingCount(shopping)}</strong> things to buy</span>
-      <span class="muted small">
-        {shopping.shortfalls.length} shortfalls · {shopping.toBuy.length} planned food · {shopping.need
-          .length} equipment
-      </span>
+      <span><strong>{shoppingCount(shopping)}</strong> to buy</span>
+      <span class="muted small">{shopping.check.length} checklist lines to check at home</span>
       <span class="more">Open and share ›</span>
     </a>
   </section>
@@ -586,6 +622,9 @@
   }
   .med {
     background: #be185d;
+  }
+  .essential {
+    background: #0f766e;
   }
 
   /* --- Lower cards (unchanged) ------------------------------------------------- */

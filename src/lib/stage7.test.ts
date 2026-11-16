@@ -7,7 +7,16 @@ import { RECENT_LIST_ID, SHOPPING_LIST_ID } from './model/constants';
 import { snapshotFromDocs } from './model/snapshot';
 import type { AnyDoc, Batch, ChecklistItem, Item, Movement, Snapshot } from './model/types';
 import { filterRotation, rotationRows } from './rotation';
-import { isMealLine, mealCounts, medicationCover, resolveChecklist, statusFromStock } from './stock-links';
+import {
+  essentialsSummary,
+  isMealLine,
+  mealCounts,
+  medicationCover,
+  resolveChecklist,
+  statusFromStock,
+  waterBox,
+} from './stock-links';
+import { matchesChecklistFilter } from './checklist-view';
 
 const TODAY = '2026-11-16';
 const seed = seedJson as AnyDoc[];
@@ -205,5 +214,28 @@ describe('category units', () => {
     expect(plan.items.every((i) => i.unit === 'meal')).toBe(true);
     // Removing a unit leaves it on the items that use it.
     expect(planUnits('category:food-mains', [{ original: null, name: 'tin' }], snap.items).items).toEqual([]);
+  });
+});
+
+describe('1.3.1: essentials and the water box', () => {
+  it('counts lines ticked Essential, Have against all', () => {
+    const lines = snap.checklistItems.slice(0, 4).map((l, i) => ({
+      ...l,
+      essential: i < 3,
+      status: i === 0 ? ('have' as const) : ('need' as const),
+    }));
+    const e = essentialsSummary(lines);
+    expect(e).toMatchObject({ have: 1, total: 3 });
+    expect(e.missing.map((l) => l._id)).toEqual([lines[1]._id, lines[2]._id]);
+    expect(essentialsSummary(snap.checklistItems)).toMatchObject({ have: 0, total: 0 });
+    expect(matchesChecklistFilter(lines[0], 'essential', TODAY)).toBe(true);
+    expect(matchesChecklistFilter(lines[3], 'essential', TODAY)).toBe(false);
+  });
+
+  it('judges stored water against litres for everyone for the target days', () => {
+    // 3 people × 4 L + 2 dogs × 1 L = 14 L a day; 3 days = 42 L.
+    expect(waterBox(0, 14, 3)).toMatchObject({ target: 42, band: 'red' });
+    expect(waterBox(21, 14, 3).band).toBe('amber');
+    expect(waterBox(42, 14, 3).band).toBe('green');
   });
 });

@@ -81,7 +81,7 @@ export function isCheckDue(line: ChecklistItem, today: IsoDate): boolean {
   return next === null || next <= today;
 }
 
-export type ChecklistFilter = 'all' | ChecklistStatus | 'due';
+export type ChecklistFilter = 'all' | ChecklistStatus | 'due' | 'essential';
 
 export function matchesChecklistFilter(
   line: ChecklistItem,
@@ -91,6 +91,7 @@ export function matchesChecklistFilter(
   if (line.deleted) return false;
   if (filter === 'all') return true;
   if (filter === 'due') return isCheckDue(line, today);
+  if (filter === 'essential') return !!line.essential;
   return line.status === filter;
 }
 

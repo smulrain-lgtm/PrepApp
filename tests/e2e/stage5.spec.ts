@@ -22,17 +22,20 @@ test('shopping list gathers shortfalls, purchases and needs, and can be shared',
   context,
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await expect(page.getByTestId('shopping-card')).toContainText('82 things to buy');
+  await expect(page.getByTestId('shopping-card')).toContainText('24 to buy');
   await page.getByTestId('shopping-card').click();
   await expect(page.getByRole('heading', { name: 'Lists', level: 1 })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Shopping list/, pressed: true })).toBeVisible();
-  await expect(page.getByText('42 L more')).toBeVisible();
+  // Shortfalls and Need lines are no longer on the list (1.3.1).
+  await expect(page.getByText('To reach the target')).toHaveCount(0);
+  await expect(page.getByText(/Equipment and supplies needed/)).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: /To check at home/ })).toBeVisible();
 
   await page.getByRole('button', { name: 'Share', exact: true }).click();
   // No share sheet in a desktop browser: the list is copied instead.
   await expect(page.getByRole('status').filter({ hasText: 'Shopping list copied.' })).toBeVisible();
   const text = await page.evaluate(() => navigator.clipboard.readText());
-  expect(text).toContain('- Water: 42 L more');
+  expect(text).not.toContain('42 L more');
   expect(text).toContain('On the shopping list:');
 });
 

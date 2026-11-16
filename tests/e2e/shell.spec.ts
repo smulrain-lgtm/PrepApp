@@ -3,9 +3,8 @@ import { expect, test } from '@playwright/test';
 test('shows the seven areas and switches between them', async ({ page }) => {
   await page.goto('./');
   const nav = page.getByRole('navigation', { name: 'Main' });
-  for (const label of ['Dashboard', 'Inventory', 'Lists', 'Rotation', 'Checklist', 'Info', 'Settings']) {
-    await expect(nav.getByRole('button', { name: label })).toBeVisible();
-  }
+  const order = ['Dashboard', 'Inventory', 'Checklist', 'Rotation', 'Lists', 'Info', 'Settings'];
+  await expect(nav.getByRole('button')).toHaveText(order);
   await nav.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
   await expect(page).toHaveURL(/#\/settings$/);

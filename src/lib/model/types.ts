@@ -246,6 +246,8 @@ export interface ChecklistItem extends BaseDoc {
    * their stock: Have at the target, Check when some, Need when none.
    */
   itemIds?: string[];
+  /** Marked essential: counted on the dashboard's Essentials tile. */
+  essential?: boolean;
 }
 
 export interface Contact extends BaseDoc {
