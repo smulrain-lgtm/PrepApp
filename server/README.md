@@ -65,7 +65,7 @@ Tap **Save**, then **Test connection**: it should say _Success: Connected_. Then
 
 Sync runs while the app is open. iOS gives web apps no background time, so a device catches up each time PrepApp is opened.
 
-**Updating the Pi after a new release:** `cd ~/PrepApp && git pull && cd server && docker compose up -d --build caddy` (only needed when `server/` changed). The last server change was in app version 0.4.0 (Caddy allows `GET /`); releases 1.0.0 to 1.1.0 need no Pi update.
+**Updating the Pi after a new release:** `cd ~/PrepApp && git pull && cd server && docker compose up -d --build caddy` (only needed when `server/` changed). The last server change was in app version 0.4.0 (Caddy allows `GET /`); releases 1.0.0 to 1.3.1 need no Pi update (new record types such as lists sync through the existing database with no server change).
 
 **Away from home:** connect OpenVPN, then test again. The VPN must route the home network's addresses and use a DNS server that resolves `prep.mulras.uk`.
 

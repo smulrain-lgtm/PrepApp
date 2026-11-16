@@ -190,7 +190,7 @@ Source: the household workbook _Emergency Provisions Checklist (3 Days, 3 People
 | Contacts           | 11      | 999/112, 101, 111, 105, National Gas 0800 111 999, plus placeholders (water supplier, GP, school, neighbours, insurer, vet) |
 | Pets               | 2       | "Dog 1 (smaller)" 120 g/day, "Dog 2" 80 g/day, 1 L water each — rename in Settings                                          |
 
-The inventory holds food only, so water, pet food, gas and medicines start at 0 days until stock is added.
+The inventory holds food only, so water, pet food, gas, lighting and medicines start at 0 days until stock is added. The seed also holds the 15 inventory categories (Food – Ingredients since 1.2.0) and, since 1.3.0, the built-in **Shopping list** (with the 24 planned purchases) and **Recently used** lists. Three food checklist lines are shown through the Checklist's meal boxes instead (65 lines visible).
 
 ## 8. Features by screen
 
@@ -286,7 +286,7 @@ cd ~/PrepApp && git pull && cd server && docker compose up -d --build caddy
 - The Food box replaces three checklist lines by name; renaming those lines brings them back as ordinary lines.
 - Household medicines (Settings → Household) are not behind the PIN, unlike the medical list.
 - Lists count quantities only when they are plain numbers ("4"); "2 large jars" adds one batch of 1 when Purchased.
-- Scenarios change the dashboard only; the shopping list and inventory always use the Home view.
+- Scenarios change the dashboard only; the Checklist boxes and inventory always use the Home view.
 - The scenario is chosen per device, not synced.
 - Seed data covers food only; water, gas, pet food and medicines must be added as stock.
 - Barcode look-ups need the internet, and Open Food Facts data is crowd-sourced: check the figures against the pack. The category is a guess from the product's tags.
@@ -296,13 +296,47 @@ cd ~/PrepApp && git pull && cd server && docker compose up -d --build caddy
 
 ## 14. Future work
 
-The next releases (1.2 and 1.3) are set out in [§16](#16-proposed-roadmap-from-the-provision-review). From the brief's _Nice to have_ list, barcode scanning was built in 1.2.0; not started:
+**Progress (17 Nov 2026, version 1.3.1).** All five build stages are done (1.0.0). Since then: 1.1 (dashboard redesign, scenarios, goal, taper rule, method page), 1.2 (barcode scanning, label nutrition, Food – Ingredients, editable categories), 1.3 (Lists and Rotation tabs, several lists, Recently used, checklist linked to inventory, Food box, power at home, named people and medicines) and 1.3.1 (menu order, leaner shopping list, water box, Essential lines). Of the Provision roadmap in [§16](#16-proposed-roadmap-from-the-provision-review), items 1–8 are done, 10 and 16 in part. Outstanding from the acceptance criteria: the real-device visual check on the household's iPhones and iPads (criterion 7).
 
-- Photographing labels to record best-before dates.
+### Next: 1.4 — Restock, calendar and quicker adding
+
+1. **Restock** (tab or dashboard page): what closes the gap to the target first, how many days each purchase adds, and a button to put a suggestion on the shopping list. This is where readiness shortfalls go now that 1.3.1 took them off the shopping list.
+2. **Calendar**: every upcoming best-before and recurring check by month, with an `.ics` export (optionally a feed served by the Pi, which only refreshes at home or on the VPN).
+3. **Go bag as a second kit**: a Home store / Go bag switch on Inventory, each item assigned to a kit, judged against 72 hours eaten cold.
+4. **Quicker adding**: **Common items** quick picks, **Type a list** bulk entry, a floating **+ Add** on Inventory and Lists.
+5. **Inventory polish**: category chips instead of the dropdown, larger inline −/+ steppers.
+
+### Then: 1.5 — Better numbers
+
+6. Item flags: **frozen or chilled** (lost in a power cut) and **goes with food** (oils, sauces, flour: not counted on their own; today Food – Ingredients counts in full).
+7. **Needs per person** from age, sex and activity (UK SACN figures). Ages are recorded since 1.3.0 but not yet used.
+8. **Water allowance** (drinking and cooking / +5 L washing / +12 L hygiene) and **water treatment** (collected water counts only with a filter, tablets or fuel to boil).
+9. **Cooking fuel from cooking energy** (MJ), including firewood stove vs open fire; power-cut "keep running" items.
+
+### Smaller improvements noted during 1.2–1.3
+
+- Tick the four medicine essentials as Essential by default, and fold the Medicines tile's "essentials covered" count into the Essentials tile so there is one measure.
+- Replace the Food box's name-matching of the three meal lines with a flag on the line, so renaming a line cannot bring it back.
+- Create an inventory item straight from a checklist line's link picker (today it must exist first).
+- Optionally put the inventory's −1 on Recently used too (today only Rotation's **Use now** does).
+- Numeric quantities with a stepper on list entries, so **Purchased** always pre-fills the right count (text such as "2 large jars" counts as 1).
+- An option to keep household medicines (Settings → Household) behind the PIN.
+- Reorder list entries and lists by dragging.
+- Barcode look-ups: cache the last few products so a re-scan works offline.
+
+### Later / maybe
+
+- Nutrition summary (protein, fat, carbohydrate, salt per day; the label figures are recorded since 1.2.0).
 - A readiness history graph.
-- Calendar (`.ics`) export of expiry dates and checks.
+- Photographing labels to record best-before dates.
+- A month-by-month budget plan.
+- Met Office / Environment Agency warnings (needs internet and an API).
+- External access without the VPN (DDNS with port forwarding, or Tailscale).
+- Field-level conflict merging for settings and checklist lines.
+- CSV export of the checklist.
+- A warmer visual refresh (a rounded, open-licensed typeface such as Plus Jakarta Sans).
 
-Other candidates: external access without the VPN (DDNS with port forwarding, or Tailscale), field-level conflict merging for settings, linking checklist food lines to inventory stock, CSV export of the checklist.
+**Not adopting:** accounts and server-held data (the Pi sync is private), shopping links that earn commission, household invites (sync already covers it).
 
 ## 15. Code map
 
@@ -364,7 +398,9 @@ On 16 Nov 2026 we reviewed **Provision** (provisionapp.co.uk), a free UK emergen
 
 ### Recommended releases
 
-**1.1 — Dashboard and store settings** — **released as 1.1.0** (scenarios: Home / Power cut / Garage lost / Go bag)
+This was the plan of 16 Nov 2026. Progress is marked against each item; the current, re-prioritised plan is [§14](#14-future-work).
+
+**1.1 — Dashboard and store settings** — **released as 1.1.0** (scenarios: Home / Power cut / Garage lost / Go bag; Power cut folded into Home in 1.3.0)
 
 1. Dashboard redesign: big headline number, ruler to the goal, **runs out first → Restock** button, colour-coded category tiles with icons and plain status lines ("47 days short", "Past your goal").
 2. Scenario switcher on the dashboard: Home / Power cut / No water / Go bag, as presets over our existing switches.
@@ -374,15 +410,15 @@ On 16 Nov 2026 we reviewed **Provision** (provisionapp.co.uk), a free UK emergen
 6. Settings regrouped into cards with a "Your store" sub-page.
 7. An in-app "How it's calculated" page with sources, and a "why did my number change?" note on the dashboard.
 
-**1.2 — Better numbers** — **1.2.0 released** with item 8 and the barcode part of item 16, plus Food – Ingredients and editable categories / sub-categories
+**1.2 — Better numbers** — **1.2.0 released** with item 8 and the barcode part of item 16, plus Food – Ingredients and editable categories / sub-categories. Items 9, 11 and 12 move to 1.5 (§14)
 
 8. ✅ (1.2.0) Items record packs × size (g/ml) × kcal per 100 g; calories are calculated, replacing the per-type estimates when filled in. Optional protein, fat, carbs, salt.
 9. Item flags: "frozen or chilled — lost in a power cut" and "goes with food" (does not count on its own).
-10. People by age, sex, activity and needs (UK SACN figures), each with their medicines (structured, alongside the PIN-locked medical notes).
+10. Partly done (1.3.0): named people with ages and their medicines (dose, linked inventory item, shown on the dashboard). Still to do: needs from age, sex and activity (UK SACN figures).
 11. Water allowance (drinking & cooking / +5 L / +12 L) and water treatment (collected water only counts with a filter, tablets or fuel to boil).
 12. Cooking method and fuel from cooking energy (MJ), including firewood stove vs open fire; power-cut "keep running" items.
 
-**1.3.0 (released 17 Nov 2026)** was the household's own list (above), not this roadmap stage, which moves to 1.4.
+**1.3.0 and 1.3.1 (17 Nov 2026)** were the household's own requests (lists, rotation, checklist links, Food box, people, essentials), not this roadmap stage, which moves to 1.4 (§14).
 
 **1.4 — Restock, calendar and quicker adding** (was 1.3)
 
@@ -392,6 +428,4 @@ On 16 Nov 2026 we reviewed **Provision** (provisionapp.co.uk), a free UK emergen
 16. Faster adding: ✅ (1.2.0) barcode scan or typed number (Open Food Facts, needs internet; iOS Safari needs a scanning library); still to do: **Common items** quick picks, **Type a list** bulk entry, floating **+ Add**.
 17. Inventory polish: category chips instead of a dropdown, larger inline −/+ steppers, pack size shown beside the name.
 
-**Later / maybe:** nutrition summary (protein etc.), a month-by-month budget plan, Met Office / Environment Agency warnings (needs internet and an API), a warmer visual refresh (a rounded typeface such as Plus Jakarta Sans, which is open-licensed).
-
-**Not adopting:** accounts and server-held data (our Pi sync is private), shopping links that earn commission, household invites (sync already covers it).
+**Later / maybe** and **Not adopting**: see §14.

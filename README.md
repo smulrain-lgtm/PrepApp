@@ -93,10 +93,14 @@ Good to know:
 | 1.3.0   | 17 Nov 2026 | **Lists** and **Rotation** tabs, several lists, Recently used, Purchased → inventory, show / hide groups, +10, checklist linked to inventory, Food box, power at home (Power cut scenario removed), category units, named people and medicines |
 | 1.3.1   | 17 Nov 2026 | Menu order Dashboard, Inventory, Checklist, Rotation, Lists, Info, Settings; shortfalls and Need lines off the shopping list; water and meal boxes at the top of the Checklist; Essential lines and the Essentials tile                        |
 
-Next, from the review of the Provision app ([`docs/PROJECT.md` §16](docs/PROJECT.md#16-proposed-roadmap-from-the-provision-review)):
+All five build stages are done, plus releases 1.1 to 1.3.1. Still outstanding from the acceptance criteria: a visual check on the household's own iPhones and iPads.
 
-- **1.2.x** — done in 1.2.0: calories from the label and nutrition. Still to do: "frozen or chilled" and "goes with food" flags, people by age, water allowance and treatment, fuel from cooking energy.
-- **1.4** — Restock suggestions (what closes the gap first), Calendar tab and `.ics` export, go bag as a second kit, quick adding (Common items, Type a list). Barcode scanning was brought forward into 1.2.0; 1.3.0 was the household's own list of changes.
+**Future enhancements** (full plan and reasons: [`docs/PROJECT.md` §14](docs/PROJECT.md#14-future-work)):
+
+- **1.4 — Restock, calendar and quicker adding:** a Restock page (what closes the gap first, days each purchase adds, put it on the shopping list), a Calendar of best-befores and checks with `.ics` export, the go bag as a second kit, Common items and Type a list for quick adding, inventory polish.
+- **1.5 — Better numbers:** "frozen or chilled" and "goes with food" flags (so flour and oil stop counting on their own), needs per person from age and activity, water allowance and treatment, cooking fuel from cooking energy.
+- **Smaller:** one Essentials measure (fold in the medicine essentials), a flag instead of name-matching for the meal lines, create an inventory item from a checklist link, numeric list quantities, an option to PIN-lock household medicines, offline cache of scanned products.
+- **Later / maybe:** nutrition summary, readiness history graph, label photos for dates, budget plan, weather warnings, access without the VPN.
 
 ## Development
 
