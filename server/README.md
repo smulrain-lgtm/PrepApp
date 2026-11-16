@@ -61,11 +61,11 @@ Then in the app, on each device: **Settings → Sync with the Pi**:
 | Username       | `household` (the `COUCHDB_SYNC_USER`)                   |
 | Password       | the `COUCHDB_SYNC_PASSWORD` from `.env`                 |
 
-Tap **Save**, then **Test connection**: it should say _Success: Connected_. Then turn on **Sync this device**. The badge at the top of every screen shows _Syncing…_, then _Synced 14:32_. Tap it to open these settings.
+Tap **Save**, then **Test connection**: it should say _Success: Connected_. Then turn on **Sync this device**. The badge at the top of every screen shows _Syncing…_, then _Synced 14:32_. Tap it to open Settings, then **Sync with the Pi**.
 
 Sync runs while the app is open. iOS gives web apps no background time, so a device catches up each time PrepApp is opened.
 
-**Updating the Pi after a new release:** `cd ~/PrepApp && git pull && cd server && docker compose up -d --build caddy` (only needed when `server/` changed).
+**Updating the Pi after a new release:** `cd ~/PrepApp && git pull && cd server && docker compose up -d --build caddy` (only needed when `server/` changed). The last server change was in app version 0.4.0 (Caddy allows `GET /`); releases 1.0.0 to 1.1.0 need no Pi update.
 
 **Away from home:** connect OpenVPN, then test again. The VPN must route the home network's addresses and use a DNS server that resolves `prep.mulras.uk`.
 

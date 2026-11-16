@@ -7,6 +7,7 @@ An offline-first household emergency preparedness app. It tracks emergency suppl
 - **Sync server on the Pi:** [`server/README.md`](server/README.md)
 - **Starting data:** [`docs/seed-source/`](docs/seed-source/README.md) (the household workbook, 15 Nov 2026)
 - **Build brief, review and staged plan:** the project's Claude doc, _Emergency Preparedness App — Build Brief_
+- **Current version:** 1.1.0 (Settings → About shows the version on each device)
 
 ## Install on iPhone or iPad
 
@@ -22,15 +23,15 @@ On a Mac, open the same address in Safari and use **File → Add to Dock**.
 
 ## Using it
 
-| Screen        | What it is for                                                                                                                                                                                                                                                                                                                                   |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Dashboard** | Days of readiness (red / amber / green), days for each category with the limiting one marked, expiry counts (tap to see them), the shopping list, checks that are due, checklist progress.                                                                                                                                                       |
-| **Inventory** | Every item grouped by category, with search and filters. **−1** uses the oldest pack, **+1** adds one to the newest batch. Tap an item for its batches (best-before dates), to add a batch, edit it or delete it. **+ Add** beside each category heading adds a new item already in that category. **Rotation** lists every batch, oldest first. |
-| **Checklist** | The equipment and provisions checklist. Targets scale with people, pets and days. Tap a status to cycle Need → Check → Have; tap a line for notes, the target and recurring checks (**Checked today**).                                                                                                                                          |
-| **Info**      | Contacts (tap to call or text), household plan, shut-offs with photos, grab bags, documents index, the PIN-locked medical list, quick guides, and a one-page **Print / Save as PDF** sheet.                                                                                                                                                      |
-| **Settings**  | People, pets, target days, what counts (expiry dates, use soon, indoor only, freezing), daily needs, sync, backups.                                                                                                                                                                                                                              |
+| Screen        | What it is for                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Dashboard** | "Your store lasts N days" with a ruler to your long-term goal, what runs out first with a **Restock** button, colour tiles per category (water, food, pet food, cooking gas) and medicine essentials covered. Scenario switcher: **Home / Power cut / Garage lost / Go bag**. A note explains when the figure goes down. Below: expiry counts (tap to see them), the shopping list, checks due, checklist progress. |
+| **Inventory** | Every item grouped by category, with search and filters. **−1** uses the oldest pack, **+1** adds one to the newest batch. Tap an item for its batches (best-before dates), to add a batch, edit it or delete it. **+ Add** beside each category heading adds a new item already in that category. **Rotation** lists every batch, oldest first.                                                                    |
+| **Checklist** | The equipment and provisions checklist. Targets scale with people, pets and days. Tap a status to cycle Need → Check → Have; tap a line for notes, the target and recurring checks (**Checked today**).                                                                                                                                                                                                             |
+| **Info**      | Contacts (tap to call or text), household plan, shut-offs with photos, grab bags, documents index, the PIN-locked medical list, quick guides, and a one-page **Print / Save as PDF** sheet.                                                                                                                                                                                                                         |
+| **Settings**  | Cards: **Your store** (target, long-term goal, food past its best-before, use soon, indoor only, freezing, warning window), **Household** (people, pets, daily needs), **Sync with the Pi**, **Backup and data**, **About** (version and _How it's calculated_).                                                                                                                                                    |
 
-How readiness is worked out: for each category, usable stock ÷ what the household needs per day. The lowest of those is the readiness figure. Calories per pack are estimates by type (main meal 500, side 300, dessert 350, snack 200, drink 100 kcal) until you enter the figure from the label.
+How readiness is worked out: for each category, usable stock ÷ what the household needs per day. The lowest of those is the readiness figure; days are rounded down. Medicines are not counted in days: the dashboard shows how many medicine essentials on the checklist are marked Have. Calories per pack are estimates by type (main meal 500, side 300, dessert 350, snack 200, drink 100 kcal) until you enter the figure from the label. Food past its best-before can be not counted, tapered over a year, or still counted (Settings → Your store). The full method, with sources, is in the app under _How is this worked out?_
 
 ## Sync
 
@@ -77,7 +78,16 @@ Good to know:
 | 4     | Sync with the Pi                                                     | Done   |
 | 5     | Shopping list, rotation, due checks, CSV, iPad layout, accessibility | Done   |
 
-Later (the brief's _Nice to have_): barcode scanning, label photos for dates, readiness history graph, calendar (.ics) export.
+| Version | Released    | What changed                                                                                                          |
+| ------- | ----------- | --------------------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 16 Nov 2026 | All five stages complete                                                                                              |
+| 1.0.1   | 16 Nov 2026 | **+ Add** beside each inventory category                                                                              |
+| 1.1.0   | 16 Nov 2026 | Dashboard redesign, scenarios, long-term goal, past-date taper rule, medicine essentials, Settings cards, method page |
+
+Next, from the review of the Provision app ([`docs/PROJECT.md` §16](docs/PROJECT.md#16-proposed-roadmap-from-the-provision-review)):
+
+- **1.2** — calories from the label (pack size × kcal per 100 g), "frozen or chilled" and "goes with food" flags, people by age, water allowance and treatment, fuel from cooking energy.
+- **1.3** — Restock tab (what closes the gap first), Calendar tab and `.ics` export, go bag as a second kit, barcode scanning and quick adding.
 
 ## Development
 
@@ -100,9 +110,9 @@ Pushes to `main` are tested and deployed to GitHub Pages by `.github/workflows/c
 src/
   lib/          logic (unit-tested): readiness, repository, sync, conflicts, backup, views
   views/        screens; views/info/ for the emergency information screens
-  components/   shared UI (sheet, stepper, toggle, gauge, badges)
+  components/   shared UI (sheet, stepper, toggle, badges, photo)
   seed/         seed builder and seed.json
 tests/e2e/      Playwright tests;  tests/couchsim/ test sync server
 server/         Raspberry Pi: Caddy + CouchDB (docker compose)
-docs/           seed source data
+docs/           PROJECT.md (full project record), seed source data
 ```
