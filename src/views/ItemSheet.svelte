@@ -1,27 +1,33 @@
+<script lang="ts" module>
+  import type { Item as ItemDoc } from '../lib/model/types';
+  /** Values to start a new item with (from a category's Add button, the shopping list or a scan). */
+  export type ItemPreset = Partial<Omit<ItemDoc, '_id' | '_rev' | 'type' | 'updatedAt'>>;
+</script>
+
 <script lang="ts">
   import Sheet from '../components/Sheet.svelte';
   import StatusBadge from '../components/StatusBadge.svelte';
   import Stepper from '../components/Stepper.svelte';
   import Toggle from '../components/Toggle.svelte';
+  import { listedSubCategories, subCategoriesOf } from '../lib/categories';
   import { buildItemRows, EXCLUSION_LABEL } from '../lib/inventory-view';
   import { DEFAULT_KCAL, LOCATIONS } from '../lib/model/constants';
   import { formatDate } from '../lib/model/dates';
-  import type { Item, LocationId, Metric } from '../lib/model/types';
+  import type { Item, LocationId, Metric, Nutrition, PackUnit } from '../lib/model/types';
+  import { cleanBarcode } from '../lib/barcode';
+  import { cleanNutrition, cleanPackSize, kcalPerUnit, NUTRIENTS, num } from '../lib/nutrition';
   import { store } from '../lib/store.svelte';
   import { slug } from '../seed/csv';
 
   let {
     open,
     itemId,
-    presetName = '',
-    presetCategoryId = '',
+    preset = {},
     onclose,
   }: {
     open: boolean;
     itemId: string | null;
-    presetName?: string;
-    /** Adding from a category's Add button: start in that category. */
-    presetCategoryId?: string;
+    preset?: ItemPreset;
     onclose: () => void;
   } = $props();
 
@@ -35,18 +41,47 @@
     none: 'Does not count (equipment)',
   };
 
+  /** Chosen in the sub-category list to type a new one. */
+  const NEW_SUB = '__new__';
+
   const snap = $derived(store.snapshot!);
   const existing = $derived(itemId ? snap.items.find((i) => i._id === itemId) : undefined);
   const row = $derived(
     itemId ? buildItemRows(snap, store.today).find((r) => r.item._id === itemId) : undefined,
   );
 
-  type Form = Omit<Item, '_id' | '_rev' | 'type' | 'updatedAt'>;
+  type Form = Omit<Item, '_id' | '_rev' | 'type' | 'updatedAt' | 'packSize' | 'nutrition'>;
   let form = $state<Form>(blank());
+  /** Label fields as typed (strings or numbers; blanks allowed). */
+  interface LabelForm {
+    size: number | string | null;
+    unit: PackUnit;
+    per100: Record<keyof Nutrition, number | string | null>;
+  }
+  let label = $state<LabelForm>(blankLabel());
+  let newSub = $state('');
   let loadedFor = $state<string | null | undefined>(undefined);
 
+  const category = $derived(snap.categories.find((c) => c._id === form.categoryId));
+  const subOptions = $derived.by(() => {
+    const list = category ? subCategoriesOf(category, snap.items) : [];
+    const current = form.subCategory?.trim();
+    return current && current !== NEW_SUB && !list.includes(current) ? [...list, current] : list;
+  });
+  const labelKcal = $derived(
+    kcalPerUnit(cleanPackSize(label.size, label.unit), cleanNutrition(label.per100)),
+  );
+  /** Show the label fields for food, or whenever something is already filled in. */
+  const showLabel = $derived(
+    form.perUnit.metric === 'kcal' ||
+      category?.defaultMetric === 'kcal' ||
+      !!form.barcode ||
+      num(label.size) !== undefined ||
+      Object.values(label.per100).some((v) => num(v) !== undefined),
+  );
+
   function blank(): Form {
-    const first = store.snapshot?.categories[0];
+    const first = store.snapshot?.categories.find((c) => !c.deleted);
     return {
       name: '',
       categoryId: first?._id ?? '',
@@ -58,7 +93,26 @@
       notes: '',
       countsTowardReadiness: true,
       freezeSensitive: false,
+      barcode: '',
     };
+  }
+
+  function blankLabel(): LabelForm {
+    return {
+      size: null,
+      unit: 'g',
+      per100: { kcal: null, protein: null, fat: null, carbs: null, salt: null },
+    };
+  }
+
+  function labelFrom(item: Partial<Item>): LabelForm {
+    const l = blankLabel();
+    if (item.packSize) {
+      l.size = item.packSize.amount;
+      l.unit = item.packSize.unit;
+    }
+    for (const { key } of NUTRIENTS) l.per100[key] = item.nutrition?.[key] ?? null;
+    return l;
   }
 
   // Load the form when the sheet opens for an item (not on every data refresh).
@@ -69,6 +123,7 @@
     }
     if (loadedFor === itemId) return;
     loadedFor = itemId;
+    newSub = '';
     if (existing) {
       const item = $state.snapshot(existing) as Item;
       form = {
@@ -83,29 +138,50 @@
         notes: item.notes ?? '',
         countsTowardReadiness: item.countsTowardReadiness,
         freezeSensitive: item.freezeSensitive,
+        barcode: item.barcode ?? '',
       };
+      label = labelFrom(item);
     } else {
-      const cat = snap.categories.find((c) => c._id === presetCategoryId);
+      const p = $state.snapshot(preset) as ItemPreset;
+      const cat = snap.categories.find((c) => c._id === p.categoryId && !c.deleted);
+      const { packSize, nutrition, ...rest } = p;
       form = {
         ...blank(),
-        name: presetName,
         ...(cat ? { categoryId: cat._id, perUnit: { metric: cat.defaultMetric, amount: 1 } } : {}),
+        ...rest,
+        categoryId: cat?._id ?? blank().categoryId,
+        name: p.name ?? '',
       };
+      label = labelFrom({ packSize, nutrition });
       newBatch = { date: '', undated: false, quantity: 1 };
     }
   });
 
   function onCategoryChange() {
     const cat = snap.categories.find((c) => c._id === form.categoryId);
-    if (!cat || existing) return;
+    if (!cat) return;
+    if (form.subCategory && !subCategoriesOf(cat, snap.items).includes(form.subCategory))
+      form.subCategory = '';
+    if (existing) return;
     form.perUnit.metric = cat.defaultMetric;
+    recalc();
   }
 
   function onSubCategoryChange() {
+    if (form.subCategory === NEW_SUB) return;
     const kcal = DEFAULT_KCAL[form.subCategory ?? ''];
-    if (kcal && form.perUnit.metric === 'kcal' && !existing) {
+    if (kcal && form.perUnit.metric === 'kcal' && !existing && labelKcal === null) {
       form.perUnit.amount = kcal;
       form.perUnit.estimated = true;
+    }
+  }
+
+  /** Calories per unit follow the label once pack size and kcal per 100 g are both in. */
+  function recalc() {
+    const kcal = kcalPerUnit(cleanPackSize(label.size, label.unit), cleanNutrition(label.per100));
+    if (kcal !== null && form.perUnit.metric === 'kcal') {
+      form.perUnit.amount = kcal;
+      form.perUnit.estimated = false;
     }
   }
 
@@ -116,6 +192,14 @@
     event.preventDefault();
     const name = form.name.trim();
     if (!name) return store.notify('Give the item a name.');
+    const sub = (form.subCategory === NEW_SUB ? newSub : form.subCategory)?.trim() || undefined;
+    if (form.subCategory === NEW_SUB && !sub) return store.notify('Type the new sub-category, or pick one.');
+    const barcode = cleanBarcode(form.barcode ?? '') || undefined;
+    if (barcode) {
+      const other = snap.items.find((i) => !i.deleted && i.barcode === barcode && i._id !== existing?._id);
+      if (other && !confirm(`${other.name} already has the barcode ${barcode}. Use it for this item too?`))
+        return;
+    }
     saving = true;
     let id = existing?._id ?? `item:${slug(name)}`;
     if (!existing && snap.items.some((i) => i._id === id)) id = `${id}-${Date.now().toString(36)}`;
@@ -123,14 +207,25 @@
       ...(existing ?? { _id: id, type: 'item', updatedAt: '' }),
       ...$state.snapshot(form),
       name,
-      subCategory: form.subCategory?.trim() || undefined,
+      subCategory: sub,
       supplier: form.supplier?.trim() || undefined,
       notes: form.notes?.trim() || undefined,
+      barcode,
+      packSize: cleanPackSize(label.size, label.unit),
+      nutrition: cleanNutrition(label.per100),
       perUnit: { ...form.perUnit, amount: Number(form.perUnit.amount) || 0 },
     } as Item;
+    // A sub-category typed here joins its category's list.
+    const cat = snap.categories.find((c) => c._id === doc.categoryId);
+    const listed = cat ? subCategoriesOf(cat, snap.items) : [];
+    const catDoc =
+      cat && sub && !listedSubCategories(cat).includes(sub)
+        ? { ...cat, subCategories: [...listed.filter((n) => n !== sub), sub] }
+        : null;
     const ok = await store.run(
       async (repo) => {
         await repo.save(doc);
+        if (catDoc) await repo.save(catDoc);
         if (!existing && (newBatch.undated || newBatch.date) && newBatch.quantity > 0) {
           await repo.addStock(id, newBatch.undated ? null : newBatch.date, newBatch.quantity);
         }
@@ -138,9 +233,12 @@
       existing ? 'Saved.' : `Added ${name}.`,
     );
     saving = false;
+    if (ok && sub) {
+      form.subCategory = sub;
+      newSub = '';
+    }
     if (ok && !existing) onclose();
   }
-
   async function addBatch() {
     if (!existing) return;
     if (!newBatch.undated && !newBatch.date) return store.notify('Pick a best-before date, or tick No date.');
@@ -240,12 +338,19 @@
       </label>
       <label>
         <span>Sub-category</span>
-        <input bind:value={form.subCategory} list="subcats" onchange={onSubCategoryChange} />
-        <datalist id="subcats">
-          {#each Object.keys(DEFAULT_KCAL) as s (s)}<option value={s}></option>{/each}
-        </datalist>
+        <select bind:value={form.subCategory} onchange={onSubCategoryChange} data-testid="item-subcategory">
+          <option value="">None</option>
+          {#each subOptions as name (name)}<option value={name}>{name}</option>{/each}
+          <option value={NEW_SUB}>New sub-category…</option>
+        </select>
       </label>
     </div>
+    {#if form.subCategory === NEW_SUB}
+      <label>
+        <span>New sub-category</span>
+        <input bind:value={newSub} placeholder="e.g. Tins & jars" />
+      </label>
+    {/if}
     <fieldset>
       <legend>Location</legend>
       <div class="segmented">
@@ -290,6 +395,64 @@
         </label>
       {/if}
     </div>
+    {#if showLabel}
+      <fieldset class="label-box" data-testid="label-fields">
+        <legend>From the label</legend>
+        <div class="label-top">
+          <label>
+            <span>Barcode</span>
+            <input bind:value={form.barcode} inputmode="numeric" autocomplete="off" placeholder="Optional" />
+          </label>
+          <div class="pack">
+            <label>
+              <span>Pack size</span>
+              <input
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                bind:value={label.size}
+                oninput={recalc}
+                aria-label="Pack size"
+              />
+            </label>
+            <label>
+              <span class="visually-hidden">Pack size unit</span>
+              <select bind:value={label.unit} onchange={recalc} aria-label="Pack size unit">
+                <option value="g">g</option>
+                <option value="ml">ml</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <p class="per100-head">Per 100 {label.unit}</p>
+        <div class="per100">
+          {#each NUTRIENTS as n (n.key)}
+            <label>
+              <span>{n.label} <span class="muted">({n.unit})</span></span>
+              <input
+                type="number"
+                inputmode="decimal"
+                min="0"
+                step="any"
+                bind:value={label.per100[n.key]}
+                oninput={n.key === 'kcal' ? recalc : undefined}
+                aria-label="{n.label} per 100 {label.unit}"
+              />
+            </label>
+          {/each}
+        </div>
+        {#if labelKcal !== null && form.perUnit.metric === 'kcal'}
+          <p class="muted small" data-testid="label-kcal">
+            {labelKcal.toLocaleString('en-GB')} kcal per {form.unit || 'unit'}, worked out from the label.
+          </p>
+        {:else if form.perUnit.metric === 'kcal'}
+          <p class="muted small">
+            Fill in the pack size and energy to work out the calories per {form.unit || 'unit'}.
+          </p>
+        {/if}
+      </fieldset>
+    {/if}
     <Toggle
       label="Counts towards readiness"
       checked={form.countsTowardReadiness}
@@ -476,5 +639,45 @@
 
   .danger {
     color: var(--bad);
+  }
+
+  .label-box {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .label-box legend {
+    padding: 0 0.25rem;
+  }
+
+  .label-top {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 0.75rem;
+  }
+
+  .pack {
+    display: grid;
+    grid-template-columns: 1fr 5rem;
+    gap: 0.4rem;
+    align-items: end;
+  }
+
+  .per100-head {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .per100 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: 0.5rem;
+  }
+
+  .per100 label span {
+    font-size: 0.85rem;
   }
 </style>

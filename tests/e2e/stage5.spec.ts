@@ -99,6 +99,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
       './#/settings',
       './#/settings?s=store',
       './#/settings?s=household',
+      './#/settings?s=categories',
       './#/settings?s=sync',
       './#/settings?s=data',
       './#/method',

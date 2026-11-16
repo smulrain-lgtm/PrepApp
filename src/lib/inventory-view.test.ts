@@ -54,7 +54,7 @@ describe('inventory rows', () => {
       'Food – Drinks',
     ]);
     const all = groupByCategory(rows, snap.categories, true);
-    expect(all).toHaveLength(14); // every category, so each has an Add button
+    expect(all).toHaveLength(15); // every category, so each has an Add button
     expect(all[0]).toMatchObject({ category: { name: 'Water' }, rows: [] });
     const names = groups[0].rows.map((r) => r.item.name);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));

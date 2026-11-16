@@ -83,18 +83,41 @@ export type StatusFilter = 'all' | 'expired' | 'soon30' | 'use_soon' | 'no_date'
 export interface InventoryFilter {
   query: string;
   categoryId: string;
+  /** Sub-category name ('' = any). */
+  subCategory: string;
   location: LocationId | '';
   status: StatusFilter;
 }
 
-export const EMPTY_FILTER: InventoryFilter = { query: '', categoryId: '', location: '', status: 'all' };
+export const EMPTY_FILTER: InventoryFilter = {
+  query: '',
+  categoryId: '',
+  subCategory: '',
+  location: '',
+  status: 'all',
+};
+
+/** True when any filter is set (the screen then hides empty categories). */
+export function isFiltered(f: InventoryFilter): boolean {
+  return (
+    f.query !== '' || f.categoryId !== '' || f.subCategory !== '' || f.location !== '' || f.status !== 'all'
+  );
+}
 
 export function matchesFilter(row: ItemRow, f: InventoryFilter): boolean {
   if (f.categoryId && row.item.categoryId !== f.categoryId) return false;
+  if (f.subCategory && (row.item.subCategory?.trim() ?? '') !== f.subCategory) return false;
   if (f.location && row.item.location !== f.location) return false;
   const q = f.query.trim().toLowerCase();
   if (q) {
-    const hay = [row.item.name, row.item.subCategory, row.item.supplier, row.item.notes, row.category?.name]
+    const hay = [
+      row.item.name,
+      row.item.subCategory,
+      row.item.supplier,
+      row.item.notes,
+      row.item.barcode,
+      row.category?.name,
+    ]
       .filter(Boolean)
       .join(' ')
       .toLowerCase();

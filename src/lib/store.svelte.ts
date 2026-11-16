@@ -15,6 +15,7 @@ import {
 } from './device-settings';
 import { readConflictLog, resolveConflicts, type ConflictRecord } from './sync/conflicts';
 import { SyncManager, syncState } from './sync/sync.svelte';
+import { ADDED_CATEGORIES } from './model/constants';
 import { todayIso } from './model/dates';
 import type { AnyDoc, Settings, Snapshot } from './model/types';
 import { computeReadiness, summariseChecklist } from './readiness';
@@ -56,6 +57,7 @@ class AppStore {
     try {
       await this.open();
       await this.repo.seedIfEmpty(seed as AnyDoc[]);
+      await this.repo.ensureDocs(ADDED_CATEGORIES);
       await this.refresh();
       this.conflictLog = await readConflictLog(this.db!);
       this.ready = true;
@@ -218,6 +220,7 @@ class AppStore {
       await old?.destroy();
       await this.open();
       await this.repo.importDocs(docs);
+      await this.repo.ensureDocs(ADDED_CATEGORIES);
       await this.refresh();
       this.conflictLog = [];
       this.notify(done);

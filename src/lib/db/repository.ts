@@ -70,6 +70,25 @@ export class Repository {
     return true;
   }
 
+  /**
+   * Write records added in a later version (e.g. a new category) if this
+   * device does not have them yet. A soft-deleted copy counts as present, so a
+   * category the household removed is not brought back. Returns how many were written.
+   */
+  async ensureDocs(docs: AnyDoc[]): Promise<number> {
+    let written = 0;
+    for (const doc of docs) {
+      try {
+        await this.db.get(doc._id);
+      } catch (error) {
+        if ((error as { status?: number }).status !== 404) throw error;
+        await this.db.put(stripRevs([doc])[0]);
+        written++;
+      }
+    }
+    return written;
+  }
+
   async loadSnapshot(): Promise<Snapshot> {
     const all = await this.db.allDocs({ include_docs: true });
     const docs = all.rows.map((r) => r.doc).filter((d): d is PouchDB.Core.ExistingDocument<AnyDoc> => !!d);

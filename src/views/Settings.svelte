@@ -1,16 +1,22 @@
 <script lang="ts">
+  import CategorySettings from './CategorySettings.svelte';
   import DataSettings from './DataSettings.svelte';
   import ScenarioSettings from './ScenarioSettings.svelte';
   import SyncSettings from './SyncSettings.svelte';
   import SyncBadge from '../components/SyncBadge.svelte';
+  import { subCategoriesOf } from '../lib/categories';
   import { pastDateRule } from '../lib/readiness';
   import { store } from '../lib/store.svelte';
 
   let { params }: { params: URLSearchParams } = $props();
 
-  type Page = 'store' | 'household' | 'sync' | 'data' | 'about';
+  type Page = 'store' | 'household' | 'categories' | 'sync' | 'data' | 'about';
   const page = $derived(params.get('s') as Page | null);
   const s = $derived(store.snapshot!.settings);
+  const liveCategories = $derived(store.snapshot!.categories.filter((c) => !c.deleted));
+  const subCount = $derived(
+    liveCategories.reduce((n, c) => n + subCategoriesOf(c, store.snapshot!.items).length, 0),
+  );
   const version = __APP_VERSION__;
 
   const RULE = {
@@ -31,6 +37,12 @@
       title: 'Household',
       summary: `${s.people} ${s.people === 1 ? 'person' : 'people'} · ${s.pets.length} ${s.pets.length === 1 ? 'pet' : 'pets'}`,
       icon: 'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20c0-3 3-5 6-5s6 2 6 5M16 11a2.5 2.5 0 1 0 0-5M17 15c2 .5 4 2 4 5',
+    },
+    {
+      id: 'categories',
+      title: 'Categories',
+      summary: `${liveCategories.length} categories · ${subCount} sub-categories`,
+      icon: 'M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM15 15l2 2 3-4',
     },
     {
       id: 'sync',
@@ -88,6 +100,8 @@
   <h1>{current.title}</h1>
   {#if current.id === 'store' || current.id === 'household'}
     <ScenarioSettings part={current.id} />
+  {:else if current.id === 'categories'}
+    <CategorySettings />
   {:else if current.id === 'sync'}
     <SyncSettings />
   {:else if current.id === 'data'}

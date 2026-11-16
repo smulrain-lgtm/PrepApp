@@ -4,7 +4,12 @@
  *
  * Run `npm run seed` after the workbook changes; tests check the counts.
  */
-import { DEFAULT_KCAL, DEFAULT_SETTINGS, SUSPECT_DATE_BEFORE } from '../lib/model/constants.ts';
+import {
+  DEFAULT_KCAL,
+  DEFAULT_SETTINGS,
+  INGREDIENTS_CATEGORY,
+  SUSPECT_DATE_BEFORE,
+} from '../lib/model/constants.ts';
 import type {
   AnyDoc,
   Batch,
@@ -203,6 +208,7 @@ export function buildSeed(sources: SeedSources): AnyDoc[] {
     const category: Category = { ...base('category', `category:${id}`), name, icon, order, defaultMetric };
     docs.push(category);
   });
+  docs.push({ ...INGREDIENTS_CATEGORY });
 
   // Food Store: one row per pack. Same product = one item; same product + date = one batch.
   const packs = tableAfter(parseCsv(sources.foodStoreCsv), 'Item');

@@ -5,6 +5,7 @@
  */
 import { buildItemRows, STATUS_LABEL } from './inventory-view';
 import { LOCATIONS, METRIC_INFO } from './model/constants';
+import { formatPackSize } from './nutrition';
 import type { IsoDate, Snapshot } from './model/types';
 
 export function csvCell(value: string | number | null | undefined): string {
@@ -25,6 +26,13 @@ const HEADER = [
   'Per unit',
   'Supplier',
   'Notes',
+  'Barcode',
+  'Pack size',
+  'kcal per 100',
+  'Protein per 100 (g)',
+  'Fat per 100 (g)',
+  'Carbohydrate per 100 (g)',
+  'Salt per 100 (g)',
 ];
 
 export function inventoryCsv(snap: Snapshot, today: IsoDate): string {
@@ -47,6 +55,13 @@ export function inventoryCsv(snap: Snapshot, today: IsoDate): string {
       metric ? `${item.perUnit.amount} ${metric.unit}` : '',
       item.supplier,
       item.notes,
+      item.barcode,
+      formatPackSize(item.packSize),
+      item.nutrition?.kcal,
+      item.nutrition?.protein,
+      item.nutrition?.fat,
+      item.nutrition?.carbs,
+      item.nutrition?.salt,
     ];
     if (!row.batches.length) {
       rows.push([...base, '', STATUS_LABEL.empty, 0, ...tail]);
