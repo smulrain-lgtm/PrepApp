@@ -1,4 +1,4 @@
-import type { DailyNeeds, LocationId, Metric, Settings } from './types';
+import type { Category, DailyNeeds, LocationId, Metric, Settings } from './types';
 
 export interface LocationInfo {
   id: LocationId;
@@ -50,6 +50,55 @@ export const DEFAULT_KCAL: Record<string, number> = {
   Drink: 100,
   Breakfast: 400,
 };
+
+/**
+ * Sub-categories each category offers until the household edits the list
+ * (Settings → Categories). Keyed by category id.
+ */
+export const DEFAULT_SUBCATEGORIES: Record<string, string[]> = {
+  'category:water': ['Bottled water', 'Stored in containers'],
+  'category:food-mains': ['Main meal', 'Breakfast'],
+  'category:food-sides': ['Side'],
+  'category:food-desserts': ['Dessert'],
+  'category:food-snacks': ['Snack'],
+  'category:food-drinks': ['Drink'],
+  'category:food-ingredients': [
+    'Flour & baking',
+    'Pasta, rice & grains',
+    'Tins & jars',
+    'Beans & pulses',
+    'Oils & fats',
+    'Sugar & sweeteners',
+    'Sauces & condiments',
+    'Herbs, spices & stock',
+  ],
+  'category:pet-food': ['Dry food', 'Wet food', 'Treats'],
+  'category:cooking-fuel': ['Gas', 'Wood & firelighters', 'Paraffin', 'Stoves & kit'],
+  'category:power-light': ['Batteries', 'Torches & lanterns', 'Power banks & solar'],
+  'category:safety-first-aid': ['First aid', 'Medicines', 'Safety kit'],
+  'category:hygiene': ['Washing', 'Toilet & waste', 'Cleaning'],
+  'category:warmth': ['Bedding', 'Clothing', 'Shelter'],
+  'category:documents-money': ['Documents', 'Cash'],
+  'category:garage-storage': ['Containers', 'Tools'],
+};
+
+/**
+ * Added in 1.2. Its order sits between Drinks (4) and Pet food (6), so devices
+ * set up before it need no renumbering. A fixed `updatedAt` makes the record
+ * identical on every device, so adding it on two devices never conflicts.
+ */
+export const INGREDIENTS_CATEGORY: Category = {
+  _id: 'category:food-ingredients',
+  type: 'category',
+  updatedAt: '2026-11-16T00:00:00.000Z',
+  name: 'Food – Ingredients',
+  icon: 'flour',
+  order: 5.5,
+  defaultMetric: 'kcal',
+};
+
+/** Categories added after first release: written on start-up if a device lacks them. */
+export const ADDED_CATEGORIES: Category[] = [INGREDIENTS_CATEGORY];
 
 export const DEFAULT_SETTINGS: Omit<Settings, 'updatedAt'> = {
   _id: 'settings',

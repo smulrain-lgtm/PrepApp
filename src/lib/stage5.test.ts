@@ -62,7 +62,8 @@ describe('inventory CSV', () => {
     expect(csv.charCodeAt(0)).toBe(0xfeff); // byte-order mark, so Excel reads £ and dashes
     const lines = csv.slice(1).trimEnd().split('\r\n');
     expect(lines[0]).toBe(
-      'Item,Category,Sub-category,Location,Best before,Status,Quantity,Unit,Counts as,Per unit,Supplier,Notes',
+      'Item,Category,Sub-category,Location,Best before,Status,Quantity,Unit,Counts as,Per unit,Supplier,Notes,' +
+        'Barcode,Pack size,kcal per 100,Protein per 100 (g),Fat per 100 (g),Carbohydrate per 100 (g),Salt per 100 (g)',
     );
     expect(lines).toHaveLength(1 + 38);
     expect(csv).toContain(

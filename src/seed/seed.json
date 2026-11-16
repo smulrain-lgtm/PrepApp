@@ -162,6 +162,15 @@
     "defaultMetric": "none"
   },
   {
+    "_id": "category:food-ingredients",
+    "type": "category",
+    "updatedAt": "2026-11-16T00:00:00.000Z",
+    "name": "Food – Ingredients",
+    "icon": "flour",
+    "order": 5.5,
+    "defaultMetric": "kcal"
+  },
+  {
     "_id": "item:steak-vegetables-potato",
     "type": "item",
     "updatedAt": "2026-11-15T00:00:00.000Z",

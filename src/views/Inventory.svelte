@@ -1,12 +1,17 @@
 <script lang="ts">
   import StatusBadge from '../components/StatusBadge.svelte';
-  import ItemSheet from './ItemSheet.svelte';
+  import ItemSheet, { type ItemPreset } from './ItemSheet.svelte';
+  import ScanSheet from './ScanSheet.svelte';
+  import type { LookupResult } from '../lib/barcode';
+  import { allSubCategories, subCategoriesOf } from '../lib/categories';
+  import { formatPackSize, kcalPerUnit } from '../lib/nutrition';
   import { formatDate } from '../lib/model/dates';
   import { LOCATIONS } from '../lib/model/constants';
   import {
     buildItemRows,
     EMPTY_FILTER,
     groupByCategory,
+    isFiltered,
     matchesFilter,
     type InventoryFilter,
     type StatusFilter,
@@ -35,27 +40,70 @@
     // "Add to inventory" from the shopping list opens the add sheet with the name filled in.
     const add = params.get('add');
     if (add) {
-      presetName = add;
-      presetCategoryId = '';
+      preset = { name: add };
       openItem(null);
       history.replaceState(null, '', '#/inventory');
     }
   });
 
-  let presetName = $state('');
-  let presetCategoryId = $state('');
+  let preset = $state<ItemPreset>({});
 
   function addTo(categoryId: string) {
-    presetName = '';
-    presetCategoryId = categoryId;
+    preset = { categoryId };
+    openItem(null);
+  }
+
+  let scanOpen = $state(false);
+
+  const byBarcode = (code: string) => snap.items.find((i) => !i.deleted && i.barcode === code);
+
+  function onScan(code: string, lookup: LookupResult | null) {
+    scanOpen = false;
+    const known = byBarcode(code);
+    if (known) {
+      openItem(known._id);
+      store.notify(`${known.name} is already in the inventory: add a batch.`);
+      return;
+    }
+    if (lookup?.status === 'found') {
+      const p = lookup.product;
+      const cat = snap.categories.find((c) => c._id === p.categoryId && !c.deleted);
+      const kcal = kcalPerUnit(p.packSize, p.nutrition);
+      preset = {
+        name: p.name,
+        barcode: code,
+        categoryId: cat?._id,
+        packSize: p.packSize,
+        nutrition: p.nutrition,
+        ...(cat?.defaultMetric === 'kcal' && kcal !== null
+          ? { perUnit: { metric: 'kcal', amount: kcal } }
+          : {}),
+      };
+      store.notify(`Found ${p.name || code}. Check the details, then add it.`);
+    } else {
+      preset = { barcode: code };
+      store.notify(
+        lookup?.status === 'offline'
+          ? `${lookup.message} Fill in the details yourself, or try again later.`
+          : `${code} is not on Open Food Facts. Fill in the details yourself.`,
+      );
+    }
     openItem(null);
   }
 
   const snap = $derived(store.snapshot!);
   const rows = $derived(buildItemRows(snap, store.today));
-  const filtered = $derived(
-    filter.query !== '' || filter.categoryId !== '' || filter.location !== '' || filter.status !== 'all',
+  const filtered = $derived(isFiltered(filter));
+  const filterCategory = $derived(snap.categories.find((c) => c._id === filter.categoryId));
+  const subOptions = $derived(
+    filterCategory
+      ? subCategoriesOf(filterCategory, snap.items)
+      : allSubCategories(snap.categories, snap.items),
   );
+
+  function onFilterCategory() {
+    if (filter.subCategory && !subOptions.includes(filter.subCategory)) filter.subCategory = '';
+  }
   const groups = $derived(
     groupByCategory(
       rows.filter((r) => matchesFilter(r, filter)),
@@ -89,7 +137,21 @@
 
 <div class="title-row">
   <h1>Inventory</h1>
-  <a class="rotation" href="#/rotation">Rotation</a>
+  <div class="title-actions">
+    <button class="scan" onclick={() => (scanOpen = true)} data-testid="scan-button">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path
+          d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 8v8M10 8v8M13 8v8M16 8v8"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+      </svg>
+      Scan
+    </button>
+    <a class="rotation" href="#/rotation">Rotation</a>
+  </div>
 </div>
 
 <div class="filters card">
@@ -100,10 +162,19 @@
   <div class="selects">
     <label>
       <span class="visually-hidden">Category</span>
-      <select bind:value={filter.categoryId}>
+      <select bind:value={filter.categoryId} onchange={onFilterCategory} data-testid="category-filter">
         <option value="">All categories</option>
         {#each snap.categories.filter((c) => !c.deleted) as c (c._id)}
           <option value={c._id}>{c.name}</option>
+        {/each}
+      </select>
+    </label>
+    <label>
+      <span class="visually-hidden">Sub-category</span>
+      <select bind:value={filter.subCategory} data-testid="subcategory-filter" disabled={!subOptions.length}>
+        <option value="">All sub-categories</option>
+        {#each subOptions as name (name)}
+          <option value={name}>{name}</option>
         {/each}
       </select>
     </label>
@@ -152,8 +223,10 @@
             <button class="row-main" onclick={() => openItem(row.item._id)}>
               <span class="name">{row.item.name}</span>
               <span class="meta muted">
+                {#if row.item.subCategory}{row.item.subCategory} ·{/if}
                 {row.total}
                 {row.item.unit}{row.total === 1 ? '' : 's'}
+                {#if row.item.packSize}({formatPackSize(row.item.packSize)}){/if}
                 {#if row.earliest}· {formatDate(row.earliest)}{/if}
                 · {LOCATIONS.find((l) => l.id === row.item.location)?.name}
               </span>
@@ -179,12 +252,13 @@
   <p class="card muted">No items match these filters.</p>
 {/each}
 
-<ItemSheet
-  open={sheetOpen}
-  itemId={sheetItemId}
-  {presetName}
-  {presetCategoryId}
-  onclose={() => (sheetOpen = false)}
+<ItemSheet open={sheetOpen} itemId={sheetItemId} {preset} onclose={() => (sheetOpen = false)} />
+
+<ScanSheet
+  open={scanOpen}
+  onclose={() => (scanOpen = false)}
+  onresult={onScan}
+  known={(code) => !!byBarcode(code)}
 />
 
 <style>
@@ -245,8 +319,23 @@
 
   .selects {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
+  }
+
+  .title-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .scan {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 0.9rem;
+    font-weight: 600;
+    color: var(--accent);
   }
 
   .count {
@@ -320,7 +409,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  @media (max-width: 400px) {
+  @media (max-width: 700px) {
     .selects {
       grid-template-columns: 1fr 1fr;
     }

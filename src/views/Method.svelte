@@ -39,8 +39,9 @@
         <th scope="row">Food</th>
         <td>{s.people} × {s.dailyNeeds.kcalPerPerson.toLocaleString('en-GB')} kcal</td>
         <td>
-          A typical adult figure; change it in Settings › Household. Packs without a calorie figure use an
-          estimate by type: {Object.entries(DEFAULT_KCAL)
+          A typical adult figure; change it in Settings › Household. With the pack size and kcal per 100 g
+          from the label (typed in, or filled in by scanning the barcode), a pack counts pack size × kcal ÷
+          100. Packs without a calorie figure use an estimate by type: {Object.entries(DEFAULT_KCAL)
             .map(([k, v]) => `${k.toLowerCase()} ${v}`)
             .join(', ')} kcal.
         </td>

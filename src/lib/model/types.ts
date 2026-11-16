@@ -112,6 +112,11 @@ export interface Category extends BaseDoc {
   order: number;
   /** Metric new items in this category start with. */
   defaultMetric: Metric;
+  /**
+   * Sub-categories offered for items in this category, in order. Unset until
+   * edited: the defaults in DEFAULT_SUBCATEGORIES apply (see lib/categories.ts).
+   */
+  subCategories?: string[];
 }
 
 export interface PerUnit {
@@ -120,6 +125,22 @@ export interface PerUnit {
   amount: number;
   /** True when the amount is a default estimate, not from the label. */
   estimated?: boolean;
+}
+
+/** Nutrition from the label, per 100 g (or 100 ml for drinks). */
+export interface Nutrition {
+  kcal?: number;
+  protein?: number;
+  fat?: number;
+  carbs?: number;
+  salt?: number;
+}
+
+export type PackUnit = 'g' | 'ml';
+
+export interface PackSize {
+  amount: number;
+  unit: PackUnit;
 }
 
 export interface Item extends BaseDoc {
@@ -136,6 +157,11 @@ export interface Item extends BaseDoc {
   countsTowardReadiness: boolean;
   /** Water, plain-butane gas and the like: unreliable when stored outdoors in a frost. */
   freezeSensitive: boolean;
+  /** EAN / UPC number from the pack, when scanned or typed. */
+  barcode?: string;
+  /** Contents of one unit, e.g. 400 g. With nutrition.kcal it sets the calories per unit. */
+  packSize?: PackSize;
+  nutrition?: Nutrition;
 }
 
 export interface Batch extends BaseDoc {
