@@ -14,8 +14,16 @@
     open,
     itemId,
     presetName = '',
+    presetCategoryId = '',
     onclose,
-  }: { open: boolean; itemId: string | null; presetName?: string; onclose: () => void } = $props();
+  }: {
+    open: boolean;
+    itemId: string | null;
+    presetName?: string;
+    /** Adding from a category's Add button: start in that category. */
+    presetCategoryId?: string;
+    onclose: () => void;
+  } = $props();
 
   const METRIC_LABEL: Record<Metric, string> = {
     water_l: 'Litres of water',
@@ -77,7 +85,12 @@
         freezeSensitive: item.freezeSensitive,
       };
     } else {
-      form = { ...blank(), name: presetName };
+      const cat = snap.categories.find((c) => c._id === presetCategoryId);
+      form = {
+        ...blank(),
+        name: presetName,
+        ...(cat ? { categoryId: cat._id, perUnit: { metric: cat.defaultMetric, amount: 1 } } : {}),
+      };
       newBatch = { date: '', undated: false, quantity: 1 };
     }
   });

@@ -59,6 +59,21 @@ test('turning "Consider expiry dates" OFF raises food days (criterion 3)', async
   await expect.poll(daysOf).toBeGreaterThan(before);
 });
 
+test('each category has an Add button that opens the form in that category', async ({ page }) => {
+  await openDashboard(page);
+  await nav(page, 'Inventory');
+  await page.getByRole('button', { name: 'Add item to Food – Snacks' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Add item' });
+  await expect(sheet.getByRole('combobox', { name: /^Category/ })).toHaveValue('category:food-snacks');
+  await expect(sheet.getByRole('combobox', { name: /^Counts as/ })).toHaveValue('kcal');
+  await sheet.getByRole('button', { name: 'Done' }).click();
+
+  // While filtering, only matching categories (and their Add buttons) show.
+  await page.getByPlaceholder('Search items').fill('nuts');
+  await expect(page.getByRole('button', { name: /^Add item to/ })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Add item to Food – Snacks' })).toBeVisible();
+});
+
 test('quick actions write stock changes and the dashboard follows', async ({ page }) => {
   await openDashboard(page);
   const expired = page.locator('a.tile', { hasText: 'Expired' }).locator('.count');
@@ -76,10 +91,14 @@ test('quick actions write stock changes and the dashboard follows', async ({ pag
 test('adds a new item with a batch, and it counts', async ({ page }) => {
   await openDashboard(page);
   await nav(page, 'Inventory');
-  await page.getByRole('button', { name: 'Add item' }).click();
+  // Water has no items yet, but still shows with its own Add button.
+  await expect(page.getByRole('heading', { name: 'Water', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Add item to Water' }).click();
   const sheet = page.getByRole('dialog', { name: 'Add item' });
+  // The category and its measure are already chosen.
+  await expect(sheet.getByRole('combobox', { name: /^Category/ })).toHaveValue('category:water');
+  await expect(sheet.getByRole('combobox', { name: /^Counts as/ })).toHaveValue('water_l');
   await sheet.getByLabel('Name').fill('Bottled water 2 L');
-  await sheet.getByRole('combobox', { name: /^Category/ }).selectOption({ label: 'Water' });
   await sheet.getByText('Indoors', { exact: true }).click();
   await sheet.getByLabel('Per unit').fill('2');
   await sheet.getByLabel('Best before').fill('2030-06-01');

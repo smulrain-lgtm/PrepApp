@@ -117,11 +117,20 @@ export interface CategoryGroup {
   rows: ItemRow[];
 }
 
-export function groupByCategory(rows: ItemRow[], categories: Category[]): CategoryGroup[] {
+/**
+ * Rows grouped by category, in category order, names A–Z.
+ * With `includeEmpty`, categories with no items are listed too, so each has
+ * its own Add button (used when no filter is on).
+ */
+export function groupByCategory(
+  rows: ItemRow[],
+  categories: Category[],
+  includeEmpty = false,
+): CategoryGroup[] {
   const groups: CategoryGroup[] = [];
   for (const category of categories.filter((c) => !c.deleted)) {
     const inCat = rows.filter((r) => r.item.categoryId === category._id);
-    if (inCat.length)
+    if (inCat.length || includeEmpty)
       groups.push({ category, rows: inCat.sort((a, b) => a.item.name.localeCompare(b.item.name)) });
   }
   const known = new Set(categories.map((c) => c._id));

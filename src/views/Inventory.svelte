@@ -36,25 +36,34 @@
     const add = params.get('add');
     if (add) {
       presetName = add;
+      presetCategoryId = '';
       openItem(null);
       history.replaceState(null, '', '#/inventory');
     }
   });
 
   let presetName = $state('');
+  let presetCategoryId = $state('');
+
+  function addTo(categoryId: string) {
+    presetName = '';
+    presetCategoryId = categoryId;
+    openItem(null);
+  }
 
   const snap = $derived(store.snapshot!);
   const rows = $derived(buildItemRows(snap, store.today));
+  const filtered = $derived(
+    filter.query !== '' || filter.categoryId !== '' || filter.location !== '' || filter.status !== 'all',
+  );
   const groups = $derived(
     groupByCategory(
       rows.filter((r) => matchesFilter(r, filter)),
       snap.categories,
+      !filtered, // show empty categories (with their Add button) when nothing is filtered
     ),
   );
   const shown = $derived(groups.reduce((s, g) => s + g.rows.length, 0));
-  const filtered = $derived(
-    filter.query !== '' || filter.categoryId !== '' || filter.location !== '' || filter.status !== 'all',
-  );
 
   let sheetItemId = $state<string | null>(null);
   let sheetOpen = $state(false);
@@ -80,16 +89,7 @@
 
 <div class="title-row">
   <h1>Inventory</h1>
-  <div class="actions">
-    <a class="rotation" href="#/rotation">Rotation</a>
-    <button
-      class="primary"
-      onclick={() => {
-        presetName = '';
-        openItem(null);
-      }}>Add item</button
-    >
-  </div>
+  <a class="rotation" href="#/rotation">Rotation</a>
 </div>
 
 <div class="filters card">
@@ -135,45 +135,80 @@
 
 {#each groups as group (group.category?._id ?? 'other')}
   <section aria-labelledby="cat-{group.category?._id ?? 'other'}">
-    <h2 id="cat-{group.category?._id ?? 'other'}">{group.category?.name ?? 'Other'}</h2>
-    <ul class="list card">
-      {#each group.rows as row (row.item._id)}
-        <li data-testid="item-{row.item._id}">
-          <button class="row-main" onclick={() => openItem(row.item._id)}>
-            <span class="name">{row.item.name}</span>
-            <span class="meta muted">
-              {row.total}
-              {row.item.unit}{row.total === 1 ? '' : 's'}
-              {#if row.earliest}· {formatDate(row.earliest)}{/if}
-              · {LOCATIONS.find((l) => l.id === row.item.location)?.name}
-            </span>
-            <StatusBadge status={row.status} />
-          </button>
-          <div class="quick" role="group" aria-label="Quick change for {row.item.name}">
-            <button
-              aria-label="Use one {row.item.name}"
-              disabled={row.total === 0}
-              onclick={() => minusOne(row.item._id, row.item.name)}>−1</button
-            >
-            <button aria-label="Add one {row.item.name}" onclick={() => plusOne(row.item._id, row.item.name)}
-              >+1</button
-            >
-          </div>
-        </li>
-      {/each}
-    </ul>
+    <div class="cat-head">
+      <h2 id="cat-{group.category?._id ?? 'other'}">{group.category?.name ?? 'Other'}</h2>
+      <button
+        class="add"
+        aria-label="Add item to {group.category?.name ?? 'Other'}"
+        onclick={() => addTo(group.category?._id ?? '')}>+ Add</button
+      >
+    </div>
+    {#if !group.rows.length}
+      <p class="card muted empty">No items yet.</p>
+    {:else}
+      <ul class="list card">
+        {#each group.rows as row (row.item._id)}
+          <li data-testid="item-{row.item._id}">
+            <button class="row-main" onclick={() => openItem(row.item._id)}>
+              <span class="name">{row.item.name}</span>
+              <span class="meta muted">
+                {row.total}
+                {row.item.unit}{row.total === 1 ? '' : 's'}
+                {#if row.earliest}· {formatDate(row.earliest)}{/if}
+                · {LOCATIONS.find((l) => l.id === row.item.location)?.name}
+              </span>
+              <StatusBadge status={row.status} />
+            </button>
+            <div class="quick" role="group" aria-label="Quick change for {row.item.name}">
+              <button
+                aria-label="Use one {row.item.name}"
+                disabled={row.total === 0}
+                onclick={() => minusOne(row.item._id, row.item.name)}>−1</button
+              >
+              <button
+                aria-label="Add one {row.item.name}"
+                onclick={() => plusOne(row.item._id, row.item.name)}>+1</button
+              >
+            </div>
+          </li>
+        {/each}
+      </ul>
+    {/if}
   </section>
 {:else}
   <p class="card muted">No items match these filters.</p>
 {/each}
 
-<ItemSheet open={sheetOpen} itemId={sheetItemId} {presetName} onclose={() => (sheetOpen = false)} />
+<ItemSheet
+  open={sheetOpen}
+  itemId={sheetItemId}
+  {presetName}
+  {presetCategoryId}
+  onclose={() => (sheetOpen = false)}
+/>
 
 <style>
-  .actions {
+  .cat-head {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .cat-head h2 {
+    margin: 1.25rem 0 0.5rem;
+  }
+
+  .add {
+    margin-top: 0.75rem;
+    padding: 0 0.9rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .empty {
+    margin: 0;
+    font-size: 0.9rem;
   }
 
   .rotation {
