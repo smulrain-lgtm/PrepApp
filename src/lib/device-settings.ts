@@ -1,29 +1,39 @@
 /**
  * Per-device settings, kept in this device's localStorage and never synced:
- * the sync address and login, and this device's name.
- * The sync password is deliberately not stored yet; Stage 4 decides how it is kept.
+ * how to reach the Pi, the sync login, and this device's name.
+ *
+ * The sync password is stored here so sync can start by itself when the app
+ * opens. It never leaves the device except to log in to the Pi over HTTPS.
  */
 
 export interface SyncSettings {
-  endpoint: string;
+  /** Tried in order; the first that answers is used. */
+  endpoints: string[];
   database: string;
   username: string;
+  password: string;
+  enabled: boolean;
 }
 
 const SYNC_KEY = 'prepapp.sync';
 const DEVICE_KEY = 'prepapp.deviceName';
 
 export const defaultSyncSettings: SyncSettings = {
-  endpoint: '',
+  endpoints: [],
   database: 'prepapp',
   username: 'household',
+  password: '',
+  enabled: false,
 };
 
 export function loadSyncSettings(): SyncSettings {
   try {
     const raw = localStorage.getItem(SYNC_KEY);
     if (!raw) return { ...defaultSyncSettings };
-    return { ...defaultSyncSettings, ...(JSON.parse(raw) as Partial<SyncSettings>) };
+    const stored = JSON.parse(raw) as Partial<SyncSettings> & { endpoint?: string };
+    // Stage 0 stored a single `endpoint`.
+    const endpoints = stored.endpoints ?? (stored.endpoint ? [stored.endpoint] : []);
+    return { ...defaultSyncSettings, ...stored, endpoints };
   } catch {
     return { ...defaultSyncSettings };
   }

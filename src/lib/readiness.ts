@@ -8,6 +8,7 @@
  */
 import { addDays, addMonths } from './model/dates';
 import { isIndoor, METRIC_INFO } from './model/constants';
+import { fifoOrder } from './db/fifo';
 import type { Batch, ChecklistItem, IsoDate, Item, Metric, Movement, Settings } from './model/types';
 
 export type ExpiryStatus = 'expired' | 'use_soon' | 'ok' | 'no_date';
@@ -18,6 +19,43 @@ export function batchQuantities(movements: Movement[]): Map<string, number> {
   for (const m of movements) {
     if (m.deleted) continue;
     qty.set(m.batchId, (qty.get(m.batchId) ?? 0) + m.delta);
+  }
+  return qty;
+}
+
+/**
+ * Batch quantities with overdraws settled. Two devices offline can each take
+ * the last pack of the same batch, leaving it at −1 after sync while the
+ * household really used one pack from the next batch. A batch below zero is
+ * set to 0 and the shortfall comes off the item's other batches, soonest
+ * best-before first, so the item's total is always right.
+ */
+export function settledQuantities(movements: Movement[], batches: Batch[]): Map<string, number> {
+  const qty = batchQuantities(movements);
+  const byItem = new Map<string, Batch[]>();
+  for (const b of batches) {
+    if (b.deleted) continue;
+    const list = byItem.get(b.itemId) ?? [];
+    list.push(b);
+    byItem.set(b.itemId, list);
+  }
+  for (const list of byItem.values()) {
+    let shortfall = 0;
+    for (const b of list) {
+      const q = qty.get(b._id) ?? 0;
+      if (q < 0) {
+        shortfall -= q;
+        qty.set(b._id, 0);
+      }
+    }
+    if (!shortfall) continue;
+    for (const b of list.sort(fifoOrder)) {
+      const q = qty.get(b._id) ?? 0;
+      const take = Math.min(q, shortfall);
+      qty.set(b._id, q - take);
+      shortfall -= take;
+      if (!shortfall) break;
+    }
   }
   return qty;
 }
@@ -121,7 +159,7 @@ export function band(fraction: number): Band {
 
 export function computeReadiness(input: ReadinessInput, today: IsoDate): ReadinessResult {
   const { settings } = input;
-  const qty = batchQuantities(input.movements);
+  const qty = settledQuantities(input.movements, input.batches);
   const items = new Map(input.items.filter((i) => !i.deleted).map((i) => [i._id, i]));
   const demand = dailyDemand(settings);
 

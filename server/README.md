@@ -54,14 +54,18 @@ If `prep.mulras.uk` does not load at home but `nslookup prep.mulras.uk` from out
 
 Then in the app, on each device: **Settings → Sync with the Pi**:
 
-| Field        | Value                                   |
-| ------------ | --------------------------------------- |
-| Sync address | `https://prep.mulras.uk`                |
-| Database     | `prepapp` (the `COUCHDB_DB` value)      |
-| Username     | `household` (the `COUCHDB_SYNC_USER`)   |
-| Password     | the `COUCHDB_SYNC_PASSWORD` from `.env` |
+| Field          | Value                                                   |
+| -------------- | ------------------------------------------------------- |
+| Sync addresses | `https://prep.mulras.uk` (one per line, tried in order) |
+| Database       | `prepapp` (the `COUCHDB_DB` value)                      |
+| Username       | `household` (the `COUCHDB_SYNC_USER`)                   |
+| Password       | the `COUCHDB_SYNC_PASSWORD` from `.env`                 |
 
-**Test connection** should say _Success: Connected_.
+Tap **Save**, then **Test connection**: it should say _Success: Connected_. Then turn on **Sync this device**. The badge at the top of every screen shows _Syncing…_, then _Synced 14:32_. Tap it to open these settings.
+
+Sync runs while the app is open. iOS gives web apps no background time, so a device catches up each time PrepApp is opened.
+
+**Updating the Pi after a new release:** `cd ~/PrepApp && git pull && cd server && docker compose up -d --build caddy` (only needed when `server/` changed).
 
 **Away from home:** connect OpenVPN, then test again. The VPN must route the home network's addresses and use a DNS server that resolves `prep.mulras.uk`.
 

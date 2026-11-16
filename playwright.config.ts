@@ -12,11 +12,20 @@ export default defineConfig({
     baseURL: `http://localhost:${port}/PrepApp/`,
     trace: 'off',
   },
-  webServer: {
-    command: `npm run preview -- --port ${port} --strictPort`,
-    url: `http://localhost:${port}/PrepApp/`,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: `npm run preview -- --port ${port} --strictPort`,
+      url: `http://localhost:${port}/PrepApp/`,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      // In-memory CouchDB stand-in for the sync tests.
+      command: 'node tests/couchsim/server.cjs',
+      url: 'http://localhost:5998/_up',
+      env: { PORT: '5998' },
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
   projects: [
     {
       name: 'iphone',

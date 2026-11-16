@@ -61,11 +61,12 @@
 	}
 
 	# --- Only the paths sync needs reach CouchDB ----------------------------------
+	# /                    server welcome (version only; PouchDB reads it on connect)
 	# /_up                 health check (no login needed)
 	# /<db> and /<db>/...  the household database (login needed)
 	# Everything else (/_utils admin UI, /_config, /_node, /_users, /_all_dbs ...)
 	# is refused here.
-	@allowed path /_up /{$COUCHDB_DB} /{$COUCHDB_DB}/*
+	@allowed path / /_up /{$COUCHDB_DB} /{$COUCHDB_DB}/*
 	handle @allowed {
 		reverse_proxy {$COUCHDB_UPSTREAM:couchdb:5984} {
 			# Without this, a wrong password could make iOS show its own login pop-up.

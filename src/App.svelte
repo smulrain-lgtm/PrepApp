@@ -8,6 +8,7 @@
   import Inventory from './views/Inventory.svelte';
   import Placeholder from './views/Placeholder.svelte';
   import Settings from './views/Settings.svelte';
+  import SyncBadge from './components/SyncBadge.svelte';
 
   interface Route {
     tab: TabId;
@@ -68,7 +69,7 @@
 
   <main>
     <header class="status" role="status">
-      <span class="pill" class:offline={!online}>{online ? 'Online' : 'Offline'}</span>
+      <SyncBadge {online} link />
       {#if pwa.offlineReady}
         <span class="pill ready">Works offline</span>
       {/if}
@@ -164,11 +165,6 @@
     border-radius: 999px;
     background: var(--good-bg);
     color: var(--good);
-  }
-
-  .pill.offline {
-    background: var(--warn-bg);
-    color: var(--warn);
   }
 
   .pill.ready {

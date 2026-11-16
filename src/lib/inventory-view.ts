@@ -2,7 +2,7 @@
 import { addDays } from './model/dates';
 import type { Batch, Category, IsoDate, Item, LocationId, Snapshot } from './model/types';
 import {
-  batchQuantities,
+  settledQuantities,
   exclusionReason,
   expiryStatus,
   type ExclusionReason,
@@ -37,7 +37,7 @@ export interface ItemRow {
 const URGENCY: ExpiryStatus[] = ['expired', 'use_soon', 'ok', 'no_date'];
 
 export function buildItemRows(snap: Snapshot, today: IsoDate): ItemRow[] {
-  const qty = batchQuantities(snap.movements);
+  const qty = settledQuantities(snap.movements, snap.batches);
   const categories = new Map(snap.categories.map((c) => [c._id, c]));
   const byItem = new Map<string, Batch[]>();
   for (const b of snap.batches) {

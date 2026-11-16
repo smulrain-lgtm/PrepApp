@@ -1,5 +1,10 @@
 import type { IsoDate } from './types';
 
+/** The current timestamp as an ISO 8601 string. */
+export function nowIso(): string {
+  return new Date().toISOString();
+}
+
 /** Today's date in local time as YYYY-MM-DD. */
 export function todayIso(now: Date = new Date()): IsoDate {
   const y = now.getFullYear();

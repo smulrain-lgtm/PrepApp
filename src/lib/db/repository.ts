@@ -5,7 +5,7 @@
  * Rules: stock changes are new `movement` documents (never edits); deletes are
  * soft; every write stamps `updatedAt`.
  */
-import { batchQuantities } from '../readiness';
+import { settledQuantities } from '../readiness';
 import { snapshotFromDocs } from '../model/snapshot';
 import { stripRevs } from '../backup';
 import { fifoOrder } from './fifo';
@@ -198,7 +198,7 @@ export class Repository {
   async takeStock(itemId: string, quantity: number, reason: 'used' | 'discarded'): Promise<TakeResult> {
     if (!(quantity > 0)) throw new Error('Quantity must be more than zero');
     const snap = await this.loadSnapshot();
-    const qty = batchQuantities(snap.movements);
+    const qty = settledQuantities(snap.movements, snap.batches);
     const batches = snap.batches
       .filter((b) => b.itemId === itemId && !b.deleted && (qty.get(b._id) ?? 0) > 0)
       .sort(fifoOrder);
@@ -217,7 +217,7 @@ export class Repository {
   /** Current quantity of each live batch of an item. */
   async itemStock(itemId: string): Promise<{ batch: Batch; quantity: number }[]> {
     const snap = await this.loadSnapshot();
-    const qty = batchQuantities(snap.movements);
+    const qty = settledQuantities(snap.movements, snap.batches);
     return snap.batches
       .filter((b) => b.itemId === itemId && !b.deleted)
       .sort(fifoOrder)

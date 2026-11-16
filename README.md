@@ -27,7 +27,7 @@ Known iOS limits:
 | 1     | Data model and readiness engine                                  | Done        |
 | 2     | Local MVP: dashboard, inventory, settings, JSON backup           | Done        |
 | 3     | Checklist and emergency information                              | Done        |
-| 4     | Sync with the Pi                                                 | Not started |
+| 4     | Sync with the Pi                                                 | Done        |
 | 5     | Polish and release                                               | Not started |
 
 **Stage 0 gate:** on an iPhone, the app installs from GitHub Pages, launches in airplane mode, and _Settings → Test connection_ reaches the Pi at home.

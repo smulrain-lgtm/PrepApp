@@ -1,7 +1,7 @@
 {
   "name": "prepapp",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "description": "Offline-first household emergency preparedness app (PWA)",
   "scripts": {
@@ -24,10 +24,14 @@
     "@tsconfig/svelte": "^5.0.8",
     "@types/node": "^24.19.2",
     "@types/pouchdb-core": "^7.0.15",
+    "@types/pouchdb-replication": "6.4",
     "eslint": "^10.15.0",
     "eslint-plugin-svelte": "^3.24.1",
+    "express": "^4.21.2",
+    "express-pouchdb": "^4.2.0",
     "globals": "^17.14.0",
     "pouchdb-adapter-memory": "^9.0.0",
+    "pouchdb-mapreduce": "^9.0.0",
     "prettier": "^3.10.1",
     "prettier-plugin-svelte": "^4.1.1",
     "svelte": "^5.57.3",
@@ -41,7 +45,9 @@
   },
   "dependencies": {
     "events": "^3.3.0",
+    "pouchdb-adapter-http": "^9.0.0",
     "pouchdb-adapter-idb": "^9.0.0",
-    "pouchdb-core": "^9.0.0"
+    "pouchdb-core": "^9.0.0",
+    "pouchdb-replication": "^9.0.0"
   }
 }
