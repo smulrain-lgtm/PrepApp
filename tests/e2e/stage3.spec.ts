@@ -20,7 +20,9 @@ test('checklist targets scale with the scenario', async ({ page }) => {
   await page.getByRole('button', { name: 'Increase People' }).click();
   await nav(page, 'Checklist');
   await expect(water).toContainText('Target 66 L');
-  await expect(page.getByTestId('line-checklist:05-backpacking-meals-lunch-dinner')).toContainText('30 meals');
+  await expect(page.getByTestId('line-checklist:05-backpacking-meals-lunch-dinner')).toContainText(
+    '30 meals',
+  );
 });
 
 test('status cycles Need → Check → Have and counts update', async ({ page }) => {
@@ -37,7 +39,7 @@ test('status cycles Need → Check → Have and counts update', async ({ page })
 test('recurring checks: "Checked today" clears the due flag', async ({ page }) => {
   await nav(page, 'Checklist');
   await page.getByRole('button', { name: 'Checks due' }).click();
-  const solar = page.getByTestId('line-checklist:27-portable-solar-panels');
+  const solar = page.getByTestId('line-checklist:28-portable-solar-panels');
   await expect(solar).toContainText('Check due');
   await solar.locator('.main').click();
   await page.getByRole('button', { name: 'Checked today' }).click();
@@ -49,10 +51,9 @@ test('recurring checks: "Checked today" clears the due flag', async ({ page }) =
 test('contacts: tap-to-call links and adding a contact', async ({ page }) => {
   await nav(page, 'Info');
   await page.getByRole('link', { name: /Contacts/ }).click();
-  await expect(page.getByRole('link', { name: 'Call National Gas emergency on 0800 111 999' })).toHaveAttribute(
-    'href',
-    'tel:0800111999',
-  );
+  await expect(
+    page.getByRole('link', { name: 'Call National Gas emergency on 0800 111 999' }),
+  ).toHaveAttribute('href', 'tel:0800111999');
   await page.getByRole('button', { name: 'Add contact' }).click();
   const sheet = page.getByRole('dialog', { name: 'Add contact' });
   await sheet.getByLabel('Name').fill('Next door');
