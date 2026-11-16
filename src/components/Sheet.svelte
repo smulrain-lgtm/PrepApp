@@ -9,15 +9,31 @@
   }: { open: boolean; title: string; onclose: () => void; children: Snippet } = $props();
 
   let dialog: HTMLDialogElement | undefined = $state();
+  /** iPad landscape and Mac: a detail pane beside the list instead of a modal sheet. */
+  const wide = () => window.matchMedia('(min-width: 1024px)').matches;
+  let asPane = $state(false);
 
   $effect(() => {
     if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
+    if (open && !dialog.open) {
+      asPane = wide();
+      if (asPane) dialog.show();
+      else dialog.showModal();
+      document.body.classList.toggle('pane-open', asPane);
+    }
+    if (!open && dialog.open) {
+      dialog.close();
+      document.body.classList.remove('pane-open');
+    }
   });
+
+  function onkeydown(event: KeyboardEvent) {
+    // A non-modal pane does not close on Escape by itself.
+    if (asPane && event.key === 'Escape') onclose();
+  }
 </script>
 
-<dialog bind:this={dialog} aria-label={title} {onclose}>
+<dialog bind:this={dialog} class:pane={asPane} aria-label={title} {onclose} {onkeydown}>
   <header>
     <h2>{title}</h2>
     <button type="button" class="close" onclick={onclose}>Done</button>
@@ -80,5 +96,21 @@
       border-radius: 16px;
       max-height: 85dvh;
     }
+  }
+
+  /* Detail pane: fixed to the right, the list stays usable beside it. */
+  dialog.pane {
+    position: fixed;
+    inset: 0 0 0 auto;
+    margin: 0;
+    width: 420px;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border-left: 1px solid var(--border);
+    box-shadow: -8px 0 24px rgb(0 0 0 / 0.08);
+    overflow-y: auto;
+    z-index: 30;
+    padding-top: env(safe-area-inset-top);
   }
 </style>

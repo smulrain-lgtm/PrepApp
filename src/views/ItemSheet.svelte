@@ -10,7 +10,12 @@
   import { store } from '../lib/store.svelte';
   import { slug } from '../seed/csv';
 
-  let { open, itemId, onclose }: { open: boolean; itemId: string | null; onclose: () => void } = $props();
+  let {
+    open,
+    itemId,
+    presetName = '',
+    onclose,
+  }: { open: boolean; itemId: string | null; presetName?: string; onclose: () => void } = $props();
 
   const METRIC_LABEL: Record<Metric, string> = {
     water_l: 'Litres of water',
@@ -72,7 +77,7 @@
         freezeSensitive: item.freezeSensitive,
       };
     } else {
-      form = blank();
+      form = { ...blank(), name: presetName };
       newBatch = { date: '', undated: false, quantity: 1 };
     }
   });

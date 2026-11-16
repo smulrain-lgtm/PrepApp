@@ -6,29 +6,35 @@
   import Dashboard from './views/Dashboard.svelte';
   import Info from './views/info/Info.svelte';
   import Inventory from './views/Inventory.svelte';
-  import Placeholder from './views/Placeholder.svelte';
+  import Rotation from './views/Rotation.svelte';
   import Settings from './views/Settings.svelte';
+  import Shopping from './views/Shopping.svelte';
   import SyncBadge from './components/SyncBadge.svelte';
 
+  /** Screens opened from the dashboard; the Dashboard tab stays highlighted. */
+  type Page = TabId | 'shopping' | 'rotation';
+
   interface Route {
-    tab: TabId;
+    page: Page;
     params: URLSearchParams;
   }
 
-  /** #/inventory?status=expired → { tab: 'inventory', params: status=expired } */
+  /** #/inventory?status=expired → { page: 'inventory', params: status=expired } */
   function parseHash(): Route {
     const [path, query = ''] = location.hash.replace(/^#\/?/, '').split('?');
-    return { tab: isTabId(path) ? path : 'dashboard', params: new URLSearchParams(query) };
+    const page: Page = isTabId(path) || path === 'shopping' || path === 'rotation' ? path : 'dashboard';
+    return { page, params: new URLSearchParams(query) };
   }
 
   let route = $state<Route>(parseHash());
   let online = $state(navigator.onLine);
 
-  const active = $derived(route.tab);
-  const current = $derived(tabs.find((t) => t.id === active)!);
+  const active = $derived<TabId>(
+    route.page === 'shopping' || route.page === 'rotation' ? 'dashboard' : route.page,
+  );
 
   function select(id: TabId) {
-    route = { tab: id, params: new URLSearchParams() };
+    route = { page: id, params: new URLSearchParams() };
     history.replaceState(null, '', `#/${id}`);
     window.scrollTo(0, 0);
   }
@@ -86,6 +92,10 @@
       <div class="card error" role="alert">{store.error}</div>
     {:else if !store.ready}
       <p class="muted" aria-live="polite">Loading…</p>
+    {:else if route.page === 'shopping'}
+      <Shopping />
+    {:else if route.page === 'rotation'}
+      <Rotation />
     {:else if active === 'dashboard'}
       <Dashboard />
     {:else if active === 'inventory'}
@@ -94,10 +104,8 @@
       <Checklist />
     {:else if active === 'info'}
       <Info params={route.params} />
-    {:else if active === 'settings'}
-      <Settings />
     {:else}
-      <Placeholder title={current.label} stage={current.stage} />
+      <Settings />
     {/if}
 
     {#if store.notice}

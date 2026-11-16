@@ -32,7 +32,16 @@
   $effect(() => {
     const status = params.get('status') as StatusFilter | null;
     filter = { ...EMPTY_FILTER, status: STATUS_OPTIONS.some((o) => o.value === status) ? status! : 'all' };
+    // "Add to inventory" from the shopping list opens the add sheet with the name filled in.
+    const add = params.get('add');
+    if (add) {
+      presetName = add;
+      openItem(null);
+      history.replaceState(null, '', '#/inventory');
+    }
   });
+
+  let presetName = $state('');
 
   const snap = $derived(store.snapshot!);
   const rows = $derived(buildItemRows(snap, store.today));
@@ -71,7 +80,16 @@
 
 <div class="title-row">
   <h1>Inventory</h1>
-  <button class="primary" onclick={() => openItem(null)}>Add item</button>
+  <div class="actions">
+    <a class="rotation" href="#/rotation">Rotation</a>
+    <button
+      class="primary"
+      onclick={() => {
+        presetName = '';
+        openItem(null);
+      }}>Add item</button
+    >
+  </div>
 </div>
 
 <div class="filters card">
@@ -149,9 +167,24 @@
   <p class="card muted">No items match these filters.</p>
 {/each}
 
-<ItemSheet open={sheetOpen} itemId={sheetItemId} onclose={() => (sheetOpen = false)} />
+<ItemSheet open={sheetOpen} itemId={sheetItemId} {presetName} onclose={() => (sheetOpen = false)} />
 
 <style>
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .rotation {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
   .title-row {
     display: flex;
     align-items: center;

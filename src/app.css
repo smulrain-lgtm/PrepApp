@@ -150,3 +150,10 @@ button:disabled {
     display: block !important;
   }
 }
+
+/* iPad landscape and Mac: make room for the detail pane beside the list. */
+@media (min-width: 1024px) {
+  body.pane-open main {
+    margin-right: 420px;
+  }
+}
