@@ -3,6 +3,7 @@
 An offline-first household emergency preparedness app. It tracks emergency supplies and stock rotation, shows what is missing, and works out how many days the household could last. It replaces the provisions spreadsheet and checklist.
 
 - **App:** https://smulrain-lgtm.github.io/PrepApp/
+- **Full project record** (decisions, architecture, data model, build history, runbook): [`docs/PROJECT.md`](docs/PROJECT.md)
 - **Sync server on the Pi:** [`server/README.md`](server/README.md)
 - **Starting data:** [`docs/seed-source/`](docs/seed-source/README.md) (the household workbook, 15 Nov 2026)
 - **Build brief, review and staged plan:** the project's Claude doc, _Emergency Preparedness App — Build Brief_
