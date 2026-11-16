@@ -125,3 +125,28 @@ button:disabled {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+@media print {
+  .tabbar,
+  .status,
+  .back,
+  .toast,
+  .update,
+  .no-print {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  .shell {
+    display: block !important;
+  }
+}

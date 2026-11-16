@@ -97,6 +97,14 @@ describe('Repository', () => {
     expect(saved._rev).not.toBe(item._rev);
   });
 
+  it('a save from an out-of-date copy on this device still lands (newest wins)', async () => {
+    const line = (await repo.loadSnapshot()).checklistItems[0];
+    await repo.save({ ...line, status: 'check' });
+    await repo.save({ ...line, status: 'have' }); // same stale _rev as the first save
+    const after = (await repo.loadSnapshot()).checklistItems[0];
+    expect(after.status).toBe('have');
+  });
+
   it('two devices taking the same item both count (no lost update)', async () => {
     // Same database here; Stage 4 tests this across replicated databases.
     const other = new Repository(repo.db, { deviceName: 'ipad', now: () => '2026-11-15T13:00:00.000Z' });

@@ -113,7 +113,7 @@
         {checklist.dueChecks.length} recurring {checklist.dueChecks.length === 1 ? 'check is' : 'checks are'} due.
       {/if}
     </p>
-    <p class="muted small">The full checklist arrives in Stage 3.</p>
+    <a class="more" href="#/checklist">Open the checklist ›</a>
   </div>
 </section>
 
@@ -238,6 +238,15 @@
   .small {
     font-size: 0.85rem;
     margin-top: 0.5rem;
+  }
+
+  .more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
   }
 
   @media (min-width: 744px) {

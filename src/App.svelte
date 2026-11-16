@@ -2,7 +2,9 @@
   import { applyUpdate, pwa } from './lib/pwa.svelte';
   import { store } from './lib/store.svelte';
   import { isTabId, tabs, type TabId } from './lib/tabs';
+  import Checklist from './views/Checklist.svelte';
   import Dashboard from './views/Dashboard.svelte';
+  import Info from './views/info/Info.svelte';
   import Inventory from './views/Inventory.svelte';
   import Placeholder from './views/Placeholder.svelte';
   import Settings from './views/Settings.svelte';
@@ -87,6 +89,10 @@
       <Dashboard />
     {:else if active === 'inventory'}
       <Inventory params={route.params} />
+    {:else if active === 'checklist'}
+      <Checklist />
+    {:else if active === 'info'}
+      <Info params={route.params} />
     {:else if active === 'settings'}
       <Settings />
     {:else}

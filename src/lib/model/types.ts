@@ -186,12 +186,19 @@ export interface Contact extends BaseDoc {
   priority: number;
 }
 
+export type InfoSection = 'plan' | 'shutoffs' | 'medical' | 'documents' | 'grabbag';
+
 export interface InfoNote extends BaseDoc {
   type: 'infoNote';
-  section: 'plan' | 'shutoffs' | 'medical' | 'documents' | 'guides';
+  section: InfoSection;
   title: string;
   body: string;
+  /** Behind the app PIN (medical notes). */
   locked: boolean;
+  order: number;
+  /** A photo is stored as the PouchDB attachment `photo` (shut-offs). */
+  hasPhoto?: boolean;
+  _attachments?: PouchDB.Core.Attachments;
 }
 
 export type PurchaseStatus = 'to_buy' | 'bought';
