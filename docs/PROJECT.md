@@ -19,6 +19,7 @@ The complete reference for PrepApp: what it is for, every decision made, how it 
 13. [Known limits](#13-known-limits)
 14. [Future work](#14-future-work)
 15. [Code map](#15-code-map)
+16. [Proposed roadmap (from the Provision review)](#16-proposed-roadmap-from-the-provision-review)
 
 ---
 
@@ -292,3 +293,59 @@ server/                      docker-compose.yml, caddy/ (Dockerfile, Caddyfile),
                              setup-couchdb.sh, .env.example, README.md
 docs/                        PROJECT.md (this file), seed-source/
 ```
+
+## 16. Proposed roadmap (from the Provision review)
+
+On 16 Nov 2026 we reviewed **Provision** (provisionapp.co.uk), a free UK emergency-store app: its website, its method page, its public web-app code, and screenshots of the signed-in app. These are ideas to adopt in our own way, not a copy: PrepApp keeps its own look, its private sync through the Pi, and no accounts.
+
+### What Provision does that PrepApp does not (yet)
+
+| Area            | Provision                                                                                                                                                                                                                                 |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Overview        | One huge "Your store lasts N days", a ruler to a long-term goal ("47 days to go"), "Water runs out first → Restock", colour tiles per category with a status line, scenario switcher: Shelter at home / Power cut / No water / Go bag     |
+| Goal            | 7, 14, 30, 90, 180 or 365 days; everything (readiness, shopping, "short") is measured against it                                                                                                                                          |
+| People          | Age, sex, activity, needs (e.g. pregnancy) → kcal and water per person (UK SACN figures: adult ≈ 2,350 kcal, child ≈ 1,900; water 3.6 L adult, 2.7 L child); medicines recorded per person                                                |
+| Pets            | Kind (dog, cat, small animal, bird) and weight → food and water; pets "alongside" (own count) or "counted in" (share water, can set the figure)                                                                                           |
+| Store settings  | Ration: full or lean (80 %). Water allowance: drinking & cooking / +5 L washing / +12 L hygiene. Food past best-before: still counted in full for 6 months, tapering to nothing at 12 months, or not counted                              |
+| Cooking & power | Cooking method (mains / all on stored fuel / half cooked / hot drinks only); fuel from cooking energy (0.6 MJ + 1.6 MJ per person a day at ~55 % stove efficiency); firewood on open fire vs stove; what must keep running in a power cut |
+| Items           | Packs × size (g/ml) × kcal per 100 g, so calories come from the label; protein, fat, carbs, salt; "frozen or chilled — lost in a power cut"; "goes with food" (oils, sauces); which kit (home store or go bag)                            |
+| Adding          | Barcode scan or type the barcode number (Open Food Facts fills name, size, nutrition); **Common items** quick picks; **Type a list** bulk entry; floating **+ Add** and **Scan a barcode**                                                |
+| Go bag          | A second kit, kept apart and judged against 72 hours on foot, eaten cold; gear list ("Essential gear 0 of 15/18")                                                                                                                         |
+| Restock         | Tabs per category; "N items close the gap — adds X days"; each suggestion shows days added; shopping style little & often / bulk / cheapest; packs sized to storage space; ordered baskets                                                |
+| Calendar        | A tab listing every dated entry with Due badges; private calendar feed with reminders 30 / 60+14 / 90+30+7 days ahead                                                                                                                     |
+| Notifications   | Met Office / Environment Agency warnings for your area; monthly "what goes out of date"; nudge after a month with nothing added                                                                                                           |
+| Settings        | Grouped cards: plan, household, your store, cooking and power, shopping, this phone, your data, account, about                                                                                                                            |
+| Trust           | A "how the figures are worked out" page with sources, reviewed by a dietitian; FAQ "why did my number go down?"                                                                                                                           |
+| Onboarding      | "Three things to start" on an empty overview; a sample store                                                                                                                                                                              |
+
+### Recommended releases
+
+**1.1 — Dashboard and store settings** (modest effort, high value)
+
+1. Dashboard redesign: big headline number, ruler to the goal, **runs out first → Restock** button, colour-coded category tiles with icons and plain status lines ("47 days short", "Past your goal").
+2. Scenario switcher on the dashboard: Home / Power cut / No water / Go bag, as presets over our existing switches.
+3. Long-term goal (7–365 days, with presets) alongside the 3-day Be Ready minimum.
+4. Medicines shown as "essentials covered" rather than days.
+5. Best-before taper as a third expiry option (full for 6 months past the date, then tapering to 0 at 12 months).
+6. Settings regrouped into cards with a "Your store" sub-page.
+7. An in-app "How it's calculated" page with sources, and a "why did my number change?" note on the dashboard.
+
+**1.2 — Better numbers**
+
+8. Items record packs × size (g/ml) × kcal per 100 g; calories are calculated, replacing the per-type estimates when filled in. Optional protein, fat, carbs, salt.
+9. Item flags: "frozen or chilled — lost in a power cut" and "goes with food" (does not count on its own).
+10. People by age, sex, activity and needs (UK SACN figures), each with their medicines (structured, alongside the PIN-locked medical notes).
+11. Water allowance (drinking & cooking / +5 L / +12 L) and water treatment (collected water only counts with a filter, tablets or fuel to boil).
+12. Cooking method and fuel from cooking energy (MJ), including firewood stove vs open fire; power-cut "keep running" items.
+
+**1.3 — Restock, calendar and quicker adding**
+
+13. Restock tab: what closes the gap first, days each purchase adds, shopping style, sized to storage (garage = plenty of room). No affiliate links.
+14. Calendar tab: every upcoming best-before and check, with an `.ics` export (and optionally a feed served by the Pi, which only refreshes at home or on the VPN).
+15. Go bag as a second kit: Home store / Go bag switch on Inventory, each item assigned to a kit, judged against 72 hours eaten cold.
+16. Faster adding: barcode scan or typed number (Open Food Facts, needs internet; iOS Safari needs a scanning library), **Common items** quick picks, **Type a list** bulk entry, floating **+ Add**.
+17. Inventory polish: category chips instead of a dropdown, larger inline −/+ steppers, pack size shown beside the name.
+
+**Later / maybe:** nutrition summary (protein etc.), a month-by-month budget plan, Met Office / Environment Agency warnings (needs internet and an API), a warmer visual refresh (a rounded typeface such as Plus Jakarta Sans, which is open-licensed).
+
+**Not adopting:** accounts and server-held data (our Pi sync is private), shopping links that earn commission, household invites (sync already covers it).
